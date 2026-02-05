@@ -277,10 +277,10 @@ test_that("Celltype_Annotation_PerCell adds metadata correctly", {
   expect_true("Test_Annotation_score" %in% colnames(sce_annotated@meta.data))
   expect_true("Test_Annotation_confidence" %in% colnames(sce_annotated@meta.data))
   
-  # Check values match
+  # Check values match (ignoring names since Seurat metadata has cell names)
   expect_equal(
-    sce_annotated$Test_Annotation,
-    result$Cell_annotations$Predicted_cell_type
+    as.character(sce_annotated$Test_Annotation),
+    as.character(result$Cell_annotations$Predicted_cell_type)
   )
 })
 
