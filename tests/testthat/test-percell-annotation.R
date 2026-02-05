@@ -176,9 +176,11 @@ test_that("Celltype_Calculate_PerCell handles Mouse species correctly", {
   # Change gene names to mouse format
   rownames(sce) <- paste0("Gene", 1:30)
   
-  markers <- create_test_markers(n_genes = 30, n_types = 2)
-  markers[[1]]$marker <- paste0("Gene", 1:10)
-  markers[[2]]$marker <- paste0("Gene", 11:20)
+  # Create new markers with correct number of genes
+  markers <- list(
+    "Type_A" = data.frame(marker = paste0("Gene", 1:10), stringsAsFactors = FALSE),
+    "Type_B" = data.frame(marker = paste0("Gene", 11:20), stringsAsFactors = FALSE)
+  )
   
   result <- Celltype_Calculate_PerCell(
     seurat_obj = sce,

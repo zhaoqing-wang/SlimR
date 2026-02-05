@@ -40,16 +40,18 @@ create_test_seurat <- function(n_cells = 100, n_genes = 50, n_clusters = 3) {
                                         nfeatures = min(2000, n_genes),
                                         verbose = FALSE)
     
-    sce <- Seurat::ScaleData(sce, verbose = FALSE)
+    # Scale only variable features to avoid issues
+    sce <- Seurat::ScaleData(sce, features = Seurat::VariableFeatures(sce), verbose = FALSE)
     
     # Add cluster information
     sce$seurat_clusters <- factor(clusters)
     Seurat::Idents(sce) <- sce$seurat_clusters
     
     # Add PCA and UMAP (for per-cell tests)
-    npcs_use <- min(10, n_genes - 1, length(Seurat::VariableFeatures(sce)))
-    if (npcs_use > 0) {
-      sce <- Seurat::RunPCA(sce, verbose = FALSE, npcs = npcs_use)
+    var_features <- Seurat::VariableFeatures(sce)
+    if (length(var_features) > 0) {
+      npcs_use <- min(10, n_genes - 1, length(var_features))
+      sce <- Seurat::RunPCA(sce, features = var_features, verbose = FALSE, npcs = npcs_use)
       sce <- Seurat::RunUMAP(sce, dims = 1:npcs_use, verbose = FALSE)
     }
     

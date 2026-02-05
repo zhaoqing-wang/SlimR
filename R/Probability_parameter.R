@@ -167,7 +167,7 @@ extract_dataset_features <- function(seurat_obj, features, assay = NULL, cluster
   }))
   
   # Signal-to-noise ratio
-  snr <- if (within_var > 0) between_var / within_var else between_var
+  snr <- if (!is.na(within_var) && within_var > 0) between_var / within_var else between_var
   
   # Calculate expression dynamic range
   dynamic_range <- log10(max(nonzero_expr) / (min(nonzero_expr) + 1e-10) + 1)
@@ -266,8 +266,10 @@ calculate_cluster_variability <- function(data.features, features) {
 #' 
 calculate_expression_skewness <- function(expression_matrix) {
   skew_vals <- apply(expression_matrix, 2, function(x) {
-    if (stats::sd(x) == 0) return(0)
-    mean((x - mean(x))^3) / (stats::sd(x)^3)  # Fisher-Pearson coefficient of skewness
+    sd_val <- stats::sd(x, na.rm = TRUE)
+    if (is.na(sd_val) || sd_val == 0) return(0)
+    m <- mean(x, na.rm = TRUE)
+    mean((x - m)^3, na.rm = TRUE) / (sd_val^3)  # Fisher-Pearson coefficient of skewness
   })
   return(mean(abs(skew_vals), na.rm = TRUE))
 }
@@ -342,11 +344,11 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
     
     # Higher sparsity -> use lower quantile; lower sparsity -> use higher quantile
     sparsity_weight <- (sparsity - 0.5) / 0.5  # Normalize to [-1, 1] range
-    sparsity_weight <- max(-1, min(1, sparsity_weight))
+    sparsity_weight <- max(-1, min(1, sparsity_weight), na.rm = TRUE)
     
-    if (sparsity_weight > 0) {
+    if (is.na(sparsity_weight) || sparsity_weight > 0) {
       # High sparsity: interpolate between q05 and q10
-      base_min_expr <- q05 + (q10 - q05) * (1 - sparsity_weight)
+      base_min_expr <- q05 + (q10 - q05) * (1 - ifelse(is.na(sparsity_weight), 0, sparsity_weight))
     } else {
       # Low sparsity: interpolate between q10 and q20
       base_min_expr <- q10 + (q20 - q10) * (-sparsity_weight)
@@ -366,7 +368,7 @@ compute_adaptive_parameters <- function(dataset_features, n_celltypes = 50) {
   
   # Adjustment 2: Dynamic range correction
   # Large dynamic range suggests need for relative rather than absolute threshold
-  if (!is.null(dynamic_range) && dynamic_range > 3) {
+  if (!is.null(dynamic_range) && !is.na(dynamic_range) && dynamic_range > 3) {
     range_factor <- 1 - 0.08 * (dynamic_range - 3)
     range_factor <- max(0.6, range_factor)
   } else {

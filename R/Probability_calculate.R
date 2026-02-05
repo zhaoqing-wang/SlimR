@@ -75,13 +75,18 @@ calculate_probability <- function(
   rownames(specificity_matrix) <- unique(data.features$id)
 
   normalize_column <- function(x) {
-    if (diff(range(x)) == 0) return(rep(0, length(x)))
-    (x - min(x)) / (max(x) - min(x))
+    # Handle NA values
+    x[is.na(x)] <- 0
+    # Check if all values are the same
+    range_diff <- diff(range(x, na.rm = TRUE))
+    if (is.na(range_diff) || range_diff == 0) return(rep(0, length(x)))
+    (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
   }
   normalized_matrix <- apply(specificity_matrix, 2, normalize_column)
 
   gene_weights <- apply(specificity_matrix, 2, function(x) {
-    if (mean(x) == 0) 0 else sd(x) / mean(x)
+    m <- mean(x, na.rm = TRUE)
+    if (is.na(m) || m == 0) 0 else sd(x, na.rm = TRUE) / m
   })
 
   cluster_scores <- apply(normalized_matrix, 1, function(x) {

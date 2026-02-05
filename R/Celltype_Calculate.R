@@ -197,6 +197,13 @@ Celltype_Calculate <- function(
   normalize_matrix <- apply(scores_matrix, 2, normalize_row)
   result_matrix <- t(normalize_matrix)
 
+  # Check if all values are the same (would cause pheatmap to fail)
+  if (length(unique(as.vector(result_matrix))) == 1) {
+    # Add small random noise to prevent identical values
+    result_matrix <- result_matrix + matrix(runif(length(result_matrix), -1e-10, 1e-10), 
+                                             nrow = nrow(result_matrix))
+  }
+
   p <- pheatmap::pheatmap(result_matrix,
                           main = "Cell annotation heatmap | SlimR",
                           color = colorRampPalette(c(colour_low, "white", colour_high))(50),

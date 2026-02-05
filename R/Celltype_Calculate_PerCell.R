@@ -281,7 +281,7 @@ Celltype_Calculate_PerCell <- function(
   )
   
   # Summary statistics
-  summary_table <- as.data.frame(table(predicted_types))
+  summary_table <- as.data.frame(table(predicted_types), stringsAsFactors = FALSE)
   colnames(summary_table) <- c("Cell_type", "Count")
   summary_table$Percentage <- round(100 * summary_table$Count / n_cells, 2)
   summary_table <- summary_table[order(-summary_table$Count), ]
@@ -387,7 +387,12 @@ Celltype_Calculate_PerCell <- function(
   gene_cv <- ifelse(gene_means > 0, gene_sds / gene_means, 0)
   
   # Normalize CV to [0.5, 1.5] range for weighting
-  cv_weights <- 0.5 + (gene_cv - min(gene_cv)) / (max(gene_cv) - min(gene_cv) + 1e-6)
+  cv_range <- max(gene_cv, na.rm = TRUE) - min(gene_cv, na.rm = TRUE)
+  if (is.na(cv_range) || cv_range == 0) {
+    cv_weights <- rep(1, length(gene_cv))
+  } else {
+    cv_weights <- 0.5 + (gene_cv - min(gene_cv, na.rm = TRUE)) / cv_range
+  }
   names(cv_weights) <- all_markers
   
   for (i in seq_along(marker_sets)) {

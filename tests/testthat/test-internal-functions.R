@@ -69,11 +69,13 @@ test_that("Score normalization works correctly", {
   
   # Test with constant values
   constant_scores <- rep(5, 5)
-  constant_normalized <- ifelse(
-    diff(range(constant_scores)) == 0,
-    rep(0, length(constant_scores)),
-    (constant_scores - min(constant_scores)) / (max(constant_scores) - min(constant_scores))
-  )
+  # When all values are the same, normalization should return all zeros
+  range_diff <- diff(range(constant_scores))
+  if (range_diff == 0) {
+    constant_normalized <- rep(0, length(constant_scores))
+  } else {
+    constant_normalized <- (constant_scores - min(constant_scores)) / (max(constant_scores) - min(constant_scores))
+  }
   expect_equal(constant_normalized, rep(0, 5))
 })
 

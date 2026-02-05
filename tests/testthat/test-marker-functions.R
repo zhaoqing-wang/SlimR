@@ -90,7 +90,8 @@ test_that("Read_seurat_markers processes Seurat markers correctly", {
   expect_true("Type_A" %in% names(result))
   expect_true("Type_B" %in% names(result))
   expect_s3_class(result$Type_A, "data.frame")
-  expect_true("marker" %in% colnames(result$Type_A))
+  # The function returns "gene" as column name, not "marker"
+  expect_true("gene" %in% colnames(result$Type_A))
   expect_equal(nrow(result$Type_A), 2)
   expect_equal(nrow(result$Type_B), 2)
 })
