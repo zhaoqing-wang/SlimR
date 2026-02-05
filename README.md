@@ -6,9 +6,9 @@
 
 <img src="docs/Sticker.png" alt="Sticker" width="233.28" height="270" align="right"/>
 
-SlimR is an R package for annotating single-cell and spatial transcriptomics datasets. It creates a unified marker list (`Markers_list`) from multiple sources: built-in curated databases (Cellmarker2, PanglaoDB, scIBD, TCellSI, PCTIT, PCTAM), Seurat objects with cell labels, or user-provided Excel tables.
+SlimR is an R package for annotating single-cell and spatial transcriptomics datasets. It creates a unified marker list (`Markers_list`) from multiple sources: built-in curated databases (`Cellmarker2`, `PanglaoDB`, `scIBD`, `TCellSI`, `PCTIT`, `PCTAM`), Seurat objects with cell labels, or user-provided Excel tables.
 
-SlimR offers two automated annotation approaches: **cluster-based** and **per-cell**. Cluster-based annotation assigns one label per cluster using adaptive machine learning for parameter optimization, expression-based probability calculation, and AUC validation. Per-cell annotation assigns labels to individual cells using three scoring methods with optional UMAP spatial smoothing, ideal for heterogeneous clusters and rare cell types. The package also supports semi-automated workflows with heatmaps, feature plots, and combined visualizations for manual annotation.
+SlimR first uses adaptive machine learning for parameter optimization, and then offers two automated annotation approaches: "cluster-based" and "per-cell". Cluster-based annotation assigns one label per cluster, expression-based probability calculation, and AUC validation. Per-cell annotation assigns labels to individual cells using three scoring methods, with optional UMAP spatial smoothing, making it ideal for heterogeneous clusters and rare cell types. The package also supports semi-automated workflows with heatmaps, feature plots, and combined visualizations for manual annotation.
 
 ## Table of Contents
 
