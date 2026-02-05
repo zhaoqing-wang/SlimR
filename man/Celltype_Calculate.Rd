@@ -87,8 +87,9 @@ A list containing:
 \item AUC: Area Under the Curve value (when compute_AUC = TRUE)
 \item Alternative_cell_types: Semi-colon separated alternative cell types
 }
-\item Heatmap_plot: Heatmap visualization of probability matrix
-\item AUC_plot: AUC visualization of Predicted cell type
+\item Heatmap_plot: Heatmap visualization of probability matrix (pheatmap object).
+Can be displayed using \code{print()} or \code{plot()}
+\item AUC_plot: AUC visualization of Predicted cell type (ggplot object)
 \item AUC_list: The resulting list of AUC values calculated for genes in alternative cell types above the approximate threshold
 }
 }
