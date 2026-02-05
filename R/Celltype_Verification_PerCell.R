@@ -132,8 +132,9 @@ Celltype_Verification_PerCell <- function(
             scores <- log2fc * ct_prop
             scores[is.nan(scores) | is.infinite(scores)] <- 0
             
-            # Select top genes
+            # Select top genes and filter out NAs
             top_genes <- names(sort(scores, decreasing = TRUE))[1:min(gene_number, length(scores))]
+            top_genes <- top_genes[!is.na(top_genes)]
             feature_list[[cell_type]] <- top_genes
             
             next
@@ -173,6 +174,8 @@ Celltype_Verification_PerCell <- function(
   # Generate dotplot
   # ============================================================================
   all_features <- unique(unlist(feature_list))
+  # Remove any NA values that might have slipped through
+  all_features <- all_features[!is.na(all_features)]
   
   if (length(all_features) == 0) {
     stop("No valid features found for verification")
@@ -186,11 +189,14 @@ Celltype_Verification_PerCell <- function(
   seurat_subset <- seurat_obj[, cells_to_plot]
   Seurat::Idents(seurat_subset) <- seurat_subset@meta.data[[annotation_col]]
   
-  dotplot <- Seurat::DotPlot(
-    object = seurat_subset,
-    features = all_features,
-    assay = assay,
-    group.by = annotation_col
+  # Suppress Seurat warnings about scaling (expected with minimal cell types)
+  dotplot <- suppressWarnings(
+    Seurat::DotPlot(
+      object = seurat_subset,
+      features = all_features,
+      assay = assay,
+      group.by = annotation_col
+    )
   ) +
     ggplot2::theme_bw() +
     ggplot2::theme(

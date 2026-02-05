@@ -75,13 +75,16 @@ test_that("Celltype_Calculate AUC computation works", {
   sce <- create_test_seurat(n_cells = 60, n_genes = 30, n_clusters = 3)
   markers <- create_test_markers(n_genes = 30, n_types = 3)
   
-  result <- Celltype_Calculate(
-    seurat_obj = sce,
-    gene_list = markers,
-    species = "Human",
-    cluster_col = "seurat_clusters",
-    compute_AUC = TRUE,
-    plot_AUC = FALSE
+  # Suppress expected warnings about missing genes in test data
+  result <- suppressWarnings(
+    Celltype_Calculate(
+      seurat_obj = sce,
+      gene_list = markers,
+      species = "Human",
+      cluster_col = "seurat_clusters",
+      compute_AUC = TRUE,
+      plot_AUC = FALSE
+    )
   )
   
   # Check that AUC computation runs without error
