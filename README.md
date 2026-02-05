@@ -507,7 +507,7 @@ Per-cell annotation assigns cell type labels to individual cells based on marker
 
 **When to use Per-Cell Annotation:**
 
--   Clusters contain mixed cell types or transitional states
+-   Clusters contain mixed cell types or transitional states (e.g., specific cell subtypes identification such as T cells and Macrophages)
 -   Need fine-grained resolution for rare cell types
 -   Cell states are continuous (e.g., differentiation gradients)
 -   Want to leverage spatial context via UMAP smoothing
@@ -546,18 +546,18 @@ You can use the `min_expression = SlimR_params$min_expression` parameter in the 
 
 **Important: Per-cell annotation requires normalized data. Make sure your Seurat object has been processed with `NormalizeData()`.**
 
-*Note: The three scoring methods differ in their approach:*
+*Scoring Methods:*
 
--   **"weighted"**: Combines expression level, detection rate, and marker specificity. Uses combined weighting: `specificity × IDF × CV`. Best for general use.
--   **"mean"**: Simple average of normalized marker expression. Fastest, good for initial exploration.
--   **"AUCell"**: Rank-based scoring with adaptive thresholds. Uses combined scoring (70% binary + 30% rank-weighted). Robust to batch effects and technical variation.
+-   "weighted": Combines expression level, detection rate, and marker specificity. Uses combined weighting: `specificity × IDF × CV`. Best for general use.
+-   "mean": Simple average of normalized marker expression. Fastest, good for initial exploration.
+-   "AUCell": Rank-based scoring with adaptive thresholds. Uses combined scoring (70% binary + 30% rank-weighted). Robust to batch effects and technical variation.
 
-**Adaptive Thresholds**
+*Adaptive Thresholds*
 
--   **`min_score = "auto"`**: Automatically sets threshold based on number of cell types (`1.5 / n_celltypes`). This prevents excessive "Unassigned" cells when using marker lists with many cell types (e.g., 30+ subtypes).
--   **`min_confidence = 1.2`**: Ratio-based confidence filtering. The top score must be at least 20% higher than the second-best score. Set to `1.0` to disable.
+-   `min_score = "auto"`: Automatically sets threshold based on number of cell types (`1.5 / n_celltypes`). This prevents excessive "Unassigned" cells when using marker lists with many cell types (e.g., 30+ subtypes).
+-   `min_confidence = 1.2`: Ratio-based confidence filtering. The top score must be at least 20% higher than the second-best score. Set to `1.0` to disable.
 
-**Parameter Recommendations:**
+*Parameter Recommendations:*
 
 | Scenario | `min_score` | `min_confidence` | Notes |
 |----------|-------------|------------------|-------|
