@@ -63,6 +63,7 @@
 #'
 #' @importFrom grDevices colorRampPalette
 #' @importFrom utils tail
+#' @importFrom stats runif
 #' @importFrom ggplot2 ggplot aes geom_line geom_abline scale_color_manual
 #' @importFrom ggplot2 theme_minimal labs theme element_text element_blank
 #' @importFrom ggplot2 guide_legend guides scale_x_continuous scale_y_continuous
@@ -584,8 +585,12 @@ Celltype_Calculate <- function(
     return_list$AUC_plot <- auc_plot
   }
   
-  if (compute_AUC && exists("auc_list_storage") && length(auc_list_storage) > 0) {
-    return_list$AUC_list <- auc_list_storage
+  if (compute_AUC) {
+    if (exists("auc_list_storage")) {
+      return_list$AUC_list <- auc_list_storage
+    } else {
+      return_list$AUC_list <- list()
+    }
   }
 
   return(return_list)
