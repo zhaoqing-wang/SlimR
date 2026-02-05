@@ -59,7 +59,11 @@ SlimR_params <- Parameter_Calculate(
 \seealso{
 Other Section_3_Automated_Annotation: 
 \code{\link{Celltype_Annotation}()},
+\code{\link{Celltype_Annotation_PerCell}()},
 \code{\link{Celltype_Calculate}()},
-\code{\link{Celltype_Verification}()}
+\code{\link{Celltype_Calculate_PerCell}()},
+\code{\link{Celltype_Verification}()},
+\code{\link{Celltype_Verification_PerCell}()},
+\code{\link{percell_workflow}}
 }
 \concept{Section_3_Automated_Annotation}

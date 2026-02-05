@@ -1,7 +1,38 @@
+# SlimR 1.1.1 (2026-02-05)
+
+## Major New Features
+
+-   **Added Per-Cell Annotation System**: Introduced three new functions for individual cell-level annotation as an alternative to cluster-based annotation:
+    -   `Celltype_Calculate_PerCell()`: Main per-cell annotation engine with three scoring methods ("weighted", "mean", "AUCell") and optional UMAP spatial smoothing via k-NN.
+    -   `Celltype_Annotation_PerCell()`: Integrates per-cell predictions into Seurat objects with confidence scores.
+    -   `Celltype_Verification_PerCell()`: Generates validation dotplots for per-cell annotations.
+-   Per-cell annotation provides finer-grained resolution than cluster-based annotation and is particularly useful for heterogeneous clusters, rare cell types, and continuous cell states.
+-   UMAP spatial smoothing leverages spatial context to reduce noise and improve annotation consistency. Uses RANN package for O(n log n) k-NN computation when available.
+-   Performance optimizations include vectorized operations, chunked processing for memory efficiency, and configurable parameters for large datasets.
+
+## Improvements
+
+-   Restructured README.md with separate sections for Cluster-Based Annotation (3.2) and Per-Cell Annotation (3.3) within the Automated Annotation Workflow.
+-   Added comprehensive documentation for per-cell annotation workflow including usage examples, parameter descriptions, and method comparisons.
+-   Enhanced Overview section in README.md to clearly describe both annotation approaches.
+
+## Dependencies
+
+-   Added RANN to Suggests for optional fast k-NN computation in UMAP spatial smoothing (10-100× speedup for large datasets).
+
+## Documentation
+
+-   Modified and optimized the README and NEWS files with new per-cell annotation sections.
+-   Added detailed workflow documentation in `inst/doc/` including:
+    -   `PerCell_Annotation_Guide.md`: Comprehensive user guide
+    -   `PerCell_Summary.md`: Quick reference
+    -   `Workflow_Diagram.md`: Visual comparison of annotation methods
+    -   `PERCELL_ADDITIONS.md`: Technical implementation details
+
 # SlimR 1.1.0 (2026-01-20)
--   This version optimizes the AUC calculation in Celltype_Calculate () to be more robust by test all gene AUCs instead of average gene expression AUCs in the previous version.
--   The machine learning algorithm in the Parameter_Calculate() function is optimized to be adaptive machine learning to improve the generalization ability of the model.
--   Add prediction to the Parameter_Calculate() function for the threshold parameter used by the Celltype_Calculate () function.
+-   This version optimizes the AUC calculation in `Celltype_Calculate ()` to be more robust by test all gene AUCs instead of average gene expression AUCs in the previous version.
+-   The machine learning algorithm in the `Parameter_Calculate()` function is optimized to be adaptive machine learning to improve the generalization ability of the model.
+-   Add prediction to the `Parameter_Calculate()` function for the threshold parameter used by the `Celltype_Calculate ()` function.
 -   Modify and optimize the README and NEWS files.
 
 # SlimR 1.0.9 (2025-12-18)

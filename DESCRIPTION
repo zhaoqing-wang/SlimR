@@ -1,7 +1,7 @@
 Package: SlimR
-Version: 1.1.0
+Version: 1.1.1
 Title: Adaptive Machine Learning-Powered, Context-Matching Tool for Single-Cell and Spatial Transcriptomics Annotation
-Description: Annotates single-cell and spatial-transcriptomic (ST) data using marker datasets. Supports unified markers list ('Markers_list') creation from built-in databases (e.g., 'Cellmarker2', 'PanglaoDB', 'scIBD', 'TCellSI', 'PCTIT', 'PCTAM'), Seurat objects, or user-supplied Excel files. SlimR can predict calculation parameters by adaptive machine learning algorithms, and based on Markers_list, calculate gene expression of different cell types and predict annotation information, and calculate corresponding AUC and annotate it, then verify it. At the same time, it can calculate gene expression corresponding to the cell type to generate a reference map for manual annotation (e.g., 'Heat Map', 'Feature Plots', 'Combined Plots'). For more details, see Kabacoff (2020, ISBN:9787115420572).
+Description: Annotates single-cell and spatial-transcriptomic (ST) data using marker datasets. Supports unified markers list ('Markers_list') creation from built-in databases (e.g., 'Cellmarker2', 'PanglaoDB', 'scIBD', 'TCellSI', 'PCTIT', 'PCTAM'), Seurat objects, or user-supplied Excel files. SlimR provides two automated annotation approaches: cluster-based annotation using 'Celltype_Calculate()' for assigning labels at the cluster level, and per-cell annotation using 'Celltype_Calculate_PerCell()' with three scoring methods (weighted, mean, AUCell) and optional UMAP spatial smoothing for fine-grained individual cell labeling. The package can predict calculation parameters by adaptive machine learning algorithms, calculate gene expression of different cell types, predict annotation information with AUC validation, and generate reference maps for manual annotation (e.g., 'Heat Map', 'Feature Plots', 'Combined Plots'). For more details, see Kabacoff (2020, ISBN:9787115420572).
 Authors@R: 
     person(given = "Zhaoqing",family = "Wang",
            email = c("zhaoqingwang@mail.sdu.edu.cn"),
@@ -25,9 +25,10 @@ Imports:
     tools,
     tibble
 Suggests:
-    crayon
+    crayon,
+    RANN
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Date: 2026-01-31
+Date: 2026-02-05

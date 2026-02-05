@@ -8,7 +8,7 @@
 
 SlimR is an R package designed for annotating single-cell and spatial-transcriptomics (ST) datasets. It supports the creation of a unified marker list, `Markers_list`, using sources including: the package's built-in curated species-specific cell type and marker reference databases (e.g., 'Cellmarker2', 'PanglaoDB', 'scIBD', 'TCellSI','PCTIT','PCTAM'), Seurat objects containing cell label information, or user-provided Excel tables mapping cell types to markers.
 
-SlimR can predict calculation parameters by adaptive machine learning algorithms by `Parameter_Calculate()`, and based on `Markers_list`, calculate gene expression of different cell types and predict annotation information and calculate corresponding AUC by `Celltype_Calculate()`, and annotate it by `Celltype_Annotation()`, then verify it by `Celltype_Verification()`. At the same time, it can calculate gene expression corresponding to the cell type to generate a reference map for manual annotation (e.g., 'Heat Map', 'Feature Plots', 'Combined Plots').
+SlimR provides two automated annotation approaches: **cluster-based** and **per-cell** annotation. For cluster-based annotation, SlimR can predict calculation parameters by adaptive machine learning algorithms using `Parameter_Calculate()`, and based on `Markers_list`, calculate gene expression of different cell types and predict annotation information and calculate corresponding AUC by `Celltype_Calculate()`, annotate it by `Celltype_Annotation()`, and verify it by `Celltype_Verification()`. For per-cell annotation, SlimR offers `Celltype_Calculate_PerCell()` with three scoring methods and optional UMAP spatial smoothing to assign cell type labels to individual cells, providing finer-grained resolution particularly useful for heterogeneous clusters. The package also supports semi-automated annotation workflows to generate reference maps for manual annotation (e.g., 'Heat Map', 'Feature Plots', 'Combined Plots').
 
 ## Table of Contents
 
@@ -28,9 +28,14 @@ SlimR can predict calculation parameters by adaptive machine learning algorithms
     -   [2.8 Example: From Review of Pan Cancer Macrophages](#28-example-from-review-of-pan-cancer-macrophages)
 3.  [Automated Annotation Workflow](#3-automated-annotation-workflow)
     -   [3.1 Calculate Parameter](#31-calculate-parameter)
-    -   [3.2 Calculate Cell Types](#32-calculate-cell-types)
-    -   [3.3 Annotate Cell Types](#33-annotate-cell-types)
-    -   [3.4 Verify Cell Types](#34-verify-cell-types)
+    -   [3.2 Cluster-Based Annotation](#32-cluster-based-annotation)
+        -   [3.2.1 Calculate Cell Types](#321-calculate-cell-types)
+        -   [3.2.2 Annotate Cell Types](#322-annotate-cell-types)
+        -   [3.2.3 Verify Cell Types](#323-verify-cell-types)
+    -   [3.3 Per-Cell Annotation](#33-per-cell-annotation)
+        -   [3.3.1 Calculate Per-Cell Types](#331-calculate-per-cell-types)
+        -   [3.3.2 Annotate Per-Cell Types](#332-annotate-per-cell-types)
+        -   [3.3.3 Verify Per-Cell Types](#333-verify-per-cell-types)
 4.  [Semi-Automated Annotation Workflow](#4-semi-automated-annotation-workflow)
     -   [4.1 Annotation Heat Map](#41-annotation-heat-map)
     -   [4.2 Annotation Feature Plots](#42-annotation-feature-plots)
@@ -95,6 +100,17 @@ install.packages(c("cowplot", "dplyr", "ggplot2", "patchwork",
                    "pheatmap", "readxl", "scales", "Seurat", 
                    "tidyr", "tools"))
 ```
+
+**Optional dependency for Per-Cell Annotation:**
+
+For faster UMAP spatial smoothing in per-cell annotation (10-100× speedup), install the RANN package:
+
+``` r
+# Optional: Install RANN for fast k-NN computation
+install.packages("RANN")
+```
+
+*Note: RANN is optional. Per-cell annotation works without it but uses a slower fallback method for UMAP smoothing.*
 
 ## 2. Standardized Markers_list Input
 
@@ -303,6 +319,22 @@ Markers_list_PCTAM <- SlimR::Markers_list_PCTAM
 
 ## 3. Automated Annotation Workflow
 
+SlimR provides two automated annotation approaches: **Cluster-Based Annotation** (Section 3.2) and **Per-Cell Annotation** (Section 3.3). Both workflows share the same parameter calculation step (Section 3.1) and use the same standardized `Markers_list` format.
+
+**Comparison of Annotation Approaches:**
+
+| Feature | Cluster-Based | Per-Cell |
+|---------|---------------|----------|
+| **Annotation Unit** | Cluster (all cells in cluster get same label) | Individual cell |
+| **Speed** | Fast (~10-30s for 50k cells) | Slower (~2-3min for 50k cells) |
+| **Memory** | Low (~800MB for 50k cells) | Higher (~2-2.5GB for 50k cells) |
+| **Resolution** | Coarse (cluster-level) | Fine (cell-level) |
+| **Best For** | Homogeneous, well-separated clusters | Mixed clusters, rare cell types, continuous states |
+| **Confidence Scores** | Cluster-level | Cell-level |
+| **Spatial Context** | Not used | Optional (UMAP smoothing) |
+
+**Recommendation:** Start with cluster-based annotation for initial exploration. Use per-cell annotation when clusters contain mixed populations or when finer resolution is needed.
+
 ### 3.1 Calculate Parameter
 
 SlimR integrates adaptive machine learning algorithms to automatically determine the optimal `min_expression` and `specificity_weight` parameters in Section 3.2 for calculating the probability of cell types.
@@ -329,7 +361,9 @@ SlimR_params <- Parameter_Calculate(
 
 **Important: This scheme is optional and can be skipped to section 3.2 for cell type probability calculation using default parameters.**
 
-### 3.2 Calculate Cell Types
+### 3.2 Cluster-Based Annotation
+
+Cluster-based annotation assigns a single cell type label to all cells within each cluster. This approach is computationally efficient and works well when clusters are homogeneous.
 
 #### 3.2.1 Calculate Cell Types (Core)
 
@@ -365,7 +399,7 @@ Error handling: If you encounter the error message `Error in .rowNamesDF<-: ! du
 rownames(sce) <- base::make.unique(rownames(sce))
 ```
 
-#### 3.2.2 Plot Heat Map (Optional)
+**Plot Heat Map (Optional)**
 
 Check the annotation probability of the cell type to be annotated in the input `cluster_col` column and cell types in `Markers_list` with the following code.
 
@@ -375,7 +409,7 @@ print(SlimR_anno_result$Heatmap_plot)
 
 *Note: If the heat map is not generated properly, please run the function `library(pheatmap)` first.*
 
-#### 3.2.3 View Prediction Results (Optional)
+**View Prediction Results (Optional)**
 
 Cell type information results predicted by SlimR can be viewed with the following code.
 
@@ -383,7 +417,7 @@ Cell type information results predicted by SlimR can be viewed with the followin
 View(SlimR_anno_result$Prediction_results)
 ```
 
-#### 3.2.4 Plot ROC Curve and AUC Value (Optional)
+**Plot ROC Curve and AUC Value (Optional)**
 
 Furthermore, the ROC curve and AUC value of the corresponding `cluster_col` and predicted cell types can be viewed by the following code.
 
@@ -395,7 +429,7 @@ print(SlimR_anno_result$AUC_plot)
 
 *Note: If the heat map is not generated properly, please run the function `library(ggplot2)` first.*
 
-#### 3.2.5 Correction for Predicted Cell Types (Alternative)
+**Correction for Predicted Cell Types (Alternative)**
 
 After viewing the list of predicted cell types and the corresponding AUC values, the predicted cell types can be corrected with the following code.
 
@@ -425,7 +459,7 @@ View(SlimR_anno_result$Prediction_results)
 
 **Important: It is strongly recommended that if you need to correct the cell type, use cell types in `SlimR_anno_result$Prediction_results$Alternative_cell_type`.**
 
-### 3.3 Annotate Cell Types
+#### 3.2.2 Annotate Cell Types
 
 Assigns SlimR predicted cell types information in `SlimR_anno_result$Prediction_results$Predicted_cell_type` to the Seurat object based on cluster annotations, and stores the results into `seurat_obj@meta.data$annotation_col`.
 
@@ -440,7 +474,7 @@ sce <- Celltype_Annotation(seurat_obj = sce,
 
 **Important: The parameter `cluster_col` in the function `Celltype_Calculate()` and the function `Celltype_Annotation()` must be strictly the same to avoid false matches. The parameter `annotation_col` in the functions `Celltype_Annotation()` and `Celltype_Verification()` must be strictly the same to avoid false matches.**
 
-### 3.4 Verify Cell Types
+#### 3.2.3 Verify Cell Types
 
 Use the cell group identity information in `seurat_obj@meta.data$annotation_col` and use the 'Feature Significance Score' (FSS, product value of `log2FC` and `Expression ratio`) as the ranking basis.
 
@@ -458,6 +492,131 @@ Celltype_Verification(seurat_obj = sce,
 **Important: The parameter `annotation_col` in the function `Celltype_Annotation()` and the function `Celltype_Verification()` must be strictly the same to avoid false matches.**
 
 *Note: Cell types located in `SlimR_anno_result$Prediction_results` were verified using the markers information from `SlimR_anno_result$Expression_list`; cell types that are not in the above list are validated using the markers information from the function `FindMarkers()`.*
+
+### 3.3 Per-Cell Annotation
+
+Per-cell annotation assigns cell type labels to individual cells based on marker gene expression profiles, providing finer-grained resolution than cluster-based annotation. This approach is particularly useful when clusters contain heterogeneous populations or when cell states exist on a continuum.
+
+**When to use Per-Cell Annotation:**
+
+-   Clusters contain mixed cell types or transitional states
+-   Need fine-grained resolution for rare cell types
+-   Cell states are continuous (e.g., differentiation gradients)
+-   Want to leverage spatial context via UMAP smoothing
+
+**When to use Cluster-Based Annotation:**
+
+-   Clusters are well-separated and homogeneous
+-   Computational efficiency is critical (cluster-based is faster)
+-   Dataset is very large (\>200k cells)
+-   Want stable, discrete categories
+
+#### 3.3.1 Calculate Per-Cell Types (Core)
+
+Uses `markers_list` to calculate per-cell scores and assign cell type labels to individual cells. Three scoring methods are available: `"weighted"` (default, recommended), `"mean"` (fast baseline), and `"AUCell"` (rank-based, robust to batch effects).
+
+``` r
+SlimR_percell_result <- Celltype_Calculate_PerCell(
+    seurat_obj = sce,
+    gene_list = Markers_list,
+    species = "Human",
+    assay = "RNA",
+    method = "weighted",
+    min_expression = 0.1,
+    use_umap_smoothing = FALSE,
+    umap_reduction = "umap",
+    k_neighbors = 15,
+    smoothing_weight = 0.3,
+    min_score = 0.1,
+    return_scores = FALSE,
+    verbose = TRUE
+    )
+```
+
+You can use the `min_expression = SlimR_params$min_expression` parameter in the function `Celltype_Calculate_PerCell()` if you have run the `Parameter_Calculate ()` function in section 3.1 above.
+
+**Important: Per-cell annotation requires normalized data. Make sure your Seurat object has been processed with `NormalizeData()`.**
+
+*Note: The three scoring methods differ in their approach:*
+
+-   **"weighted"**: Combines expression level, detection rate, and marker specificity (CV-based weighting). Best for general use.
+-   **"mean"**: Simple average of normalized marker expression. Fastest, good for initial exploration.
+-   **"AUCell"**: Rank-based scoring using proportion of markers in top 5% expressed genes. Robust to batch effects and technical variation.
+
+**UMAP Spatial Smoothing (Optional)**
+
+Enable UMAP-based spatial smoothing to reduce noise and improve annotation consistency by incorporating information from spatially neighboring cells:
+
+``` r
+SlimR_percell_result <- Celltype_Calculate_PerCell(
+    seurat_obj = sce,
+    gene_list = Markers_list,
+    species = "Human",
+    method = "weighted",
+    use_umap_smoothing = TRUE,
+    k_neighbors = 20,
+    smoothing_weight = 0.3
+    )
+```
+
+**Important: UMAP smoothing requires a UMAP reduction in the Seurat object. Run `RunUMAP()` first if not already computed. For faster k-NN computation, install the RANN package: `install.packages("RANN")`.**
+
+*Note: The `k_neighbors` parameter controls how many neighboring cells to consider (recommended: 15-30). The `smoothing_weight` parameter controls the blend between a cell's own score and its neighbors' average (0-1, where 0.3 means 30% weight to neighbors). Higher values produce smoother annotations but may blur boundaries.*
+
+**View Per-Cell Annotation Summary (Optional)**
+
+Cell type annotation summary can be viewed with the following code:
+
+``` r
+View(SlimR_percell_result$Summary)
+```
+
+**View Per-Cell Annotations (Optional)**
+
+Individual cell annotations with confidence scores can be viewed with the following code:
+
+``` r
+View(SlimR_percell_result$Cell_annotations)
+```
+
+#### 3.3.2 Annotate Per-Cell Types
+
+Assigns SlimR per-cell predicted cell types information from `SlimR_percell_result$Cell_annotations$Predicted_cell_type` directly to individual cells in the Seurat object, and stores the results into `seurat_obj@meta.data$annotation_col`.
+
+``` r
+sce <- Celltype_Annotation_PerCell(
+    seurat_obj = sce,
+    SlimR_percell_result = SlimR_percell_result,
+    plot_UMAP = TRUE,
+    annotation_col = "Cell_type_PerCell_SlimR",
+    plot_confidence = TRUE
+    )
+```
+
+**Important: The parameter `annotation_col` in the functions `Celltype_Annotation_PerCell()` and `Celltype_Verification_PerCell()` must be strictly the same to avoid false matches.**
+
+*Note: This function also adds `annotation_col_score` (max score per cell) and `annotation_col_confidence` (confidence score per cell) to the Seurat object's meta.data for quality control purposes.*
+
+#### 3.3.3 Verify Per-Cell Types
+
+Use the cell type identity information in `seurat_obj@meta.data$annotation_col` and use the 'Feature Significance Score' (FSS, product value of `log2FC` and `Expression ratio`) as the ranking basis to generate validation dotplot.
+
+``` r
+Celltype_Verification_PerCell(
+    seurat_obj = sce,
+    SlimR_percell_result = SlimR_percell_result,
+    gene_number = 5,
+    assay = "RNA",
+    colour_low = "white",
+    colour_high = "navy",
+    annotation_col = "Cell_type_PerCell_SlimR",
+    min_cells = 10
+    )
+```
+
+**Important: The parameter `annotation_col` in the function `Celltype_Annotation_PerCell()` and the function `Celltype_Verification_PerCell()` must be strictly the same to avoid false matches.**
+
+*Note: Cell types with fewer than `min_cells` cells (default: 10) are excluded from the verification plot. Cell types in `SlimR_percell_result$Expression_list` are verified using the markers information from that list; cell types not in the list are validated using markers from the function `FindMarkers()`.*
 
 ## 4. Semi-Automated Annotation Workflow
 

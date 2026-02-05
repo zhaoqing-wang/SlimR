@@ -1,0 +1,213 @@
+#' @title Per-Cell Annotation Workflow Example
+#' @name percell_workflow
+#' @description Example workflow for using SlimR's per-cell annotation functions
+#' 
+#' @section Overview:
+#' The per-cell annotation workflow in SlimR provides an alternative to cluster-based
+#' annotation by scoring and labeling individual cells based on marker expression.
+#' This is useful when:
+#' \itemize{
+#'   \item Clusters contain mixed cell types
+#'   \item You want finer-grained annotations
+#'   \item Cell states exist on a continuum
+#'   \item UMAP spatial context can improve annotation quality
+#' }
+#' 
+#' @section Basic Workflow:
+#' \preformatted{
+#' # 1. Prepare your Seurat object (must have normalized data)
+#' library(SlimR)
+#' library(Seurat)
+#' 
+#' # 2. Create or load marker list
+#' Markers_list <- Markers_filter_Cellmarker2(
+#'     Cellmarker2,
+#'     species = "Human",
+#'     tissue_class = "Intestine"
+#' )
+#' 
+#' # 3. Run per-cell annotation
+#' result <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     method = "weighted",          # "weighted", "mean", or "AUCell"
+#'     min_expression = 0.1,
+#'     min_score = 0.1,
+#'     verbose = TRUE
+#' )
+#' 
+#' # 4. Annotate Seurat object
+#' sce <- Celltype_Annotation_PerCell(
+#'     seurat_obj = sce,
+#'     SlimR_percell_result = result,
+#'     plot_UMAP = TRUE,
+#'     plot_confidence = TRUE,
+#'     annotation_col = "Cell_type_PerCell"
+#' )
+#' 
+#' # 5. Verify annotations
+#' dotplot <- Celltype_Verification_PerCell(
+#'     seurat_obj = sce,
+#'     SlimR_percell_result = result,
+#'     gene_number = 5,
+#'     annotation_col = "Cell_type_PerCell"
+#' )
+#' print(dotplot)
+#' }
+#' 
+#' @section Advanced: UMAP Spatial Smoothing:
+#' \preformatted{
+#' # Use UMAP coordinates to smooth predictions via k-NN
+#' # This reduces noise and improves consistency in spatial regions
+#' 
+#' result_smooth <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     use_umap_smoothing = TRUE,
+#'     k_neighbors = 20,              # Number of neighbors to consider
+#'     smoothing_weight = 0.3,        # 30% weight to neighbors, 70% to cell itself
+#'     verbose = TRUE
+#' )
+#' 
+#' # Compare smoothed vs unsmoothed
+#' sce$Cell_type_Smooth <- result_smooth$Cell_annotations$Predicted_cell_type
+#' sce$Cell_type_Raw <- result$Cell_annotations$Predicted_cell_type
+#' 
+#' DimPlot(sce, group.by = "Cell_type_Raw") | 
+#'   DimPlot(sce, group.by = "Cell_type_Smooth")
+#' }
+#' 
+#' @section Scoring Methods Comparison:
+#' \preformatted{
+#' # Method 1: Weighted (recommended for most cases)
+#' # Combines expression with marker specificity and detection rate
+#' result_weighted <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     method = "weighted"
+#' )
+#' 
+#' # Method 2: Mean (simple, fast)
+#' # Just averages normalized marker expression
+#' result_mean <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     method = "mean"
+#' )
+#' 
+#' # Method 3: AUCell (rank-based, robust to batch effects)
+#' # Scores based on proportion of markers in top 5% expressed genes
+#' result_aucell <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     method = "AUCell"
+#' )
+#' }
+#' 
+#' @section Comparing Cluster vs Per-Cell Annotation:
+#' \preformatted{
+#' # Cluster-based annotation (original SlimR approach)
+#' cluster_result <- Celltype_Calculate(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     cluster_col = "seurat_clusters"
+#' )
+#' 
+#' sce <- Celltype_Annotation(
+#'     seurat_obj = sce,
+#'     cluster_col = "seurat_clusters",
+#'     SlimR_anno_result = cluster_result,
+#'     annotation_col = "Cell_type_Cluster"
+#' )
+#' 
+#' # Per-cell annotation
+#' percell_result <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human"
+#' )
+#' 
+#' sce <- Celltype_Annotation_PerCell(
+#'     seurat_obj = sce,
+#'     SlimR_percell_result = percell_result,
+#'     annotation_col = "Cell_type_PerCell"
+#' )
+#' 
+#' # Compare
+#' library(ggplot2)
+#' library(patchwork)
+#' 
+#' p1 <- DimPlot(sce, group.by = "Cell_type_Cluster") + 
+#'       ggtitle("Cluster-based")
+#' p2 <- DimPlot(sce, group.by = "Cell_type_PerCell") + 
+#'       ggtitle("Per-cell")
+#' 
+#' p1 | p2
+#' 
+#' # Check agreement
+#' table(sce$Cell_type_Cluster, sce$Cell_type_PerCell)
+#' }
+#' 
+#' @section Performance Optimization:
+#' \preformatted{
+#' # For large datasets, adjust chunk_size to manage memory
+#' result <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     chunk_size = 10000,  # Process 10k cells at a time
+#'     verbose = TRUE
+#' )
+#' 
+#' # For UMAP smoothing, install RANN for 10-100x speedup
+#' # install.packages("RANN")
+#' 
+#' result_smooth <- Celltype_Calculate_PerCell(
+#'     seurat_obj = sce,
+#'     gene_list = Markers_list,
+#'     species = "Human",
+#'     use_umap_smoothing = TRUE,
+#'     k_neighbors = 15
+#'     # RANN will be used automatically if installed
+#' )
+#' }
+#' 
+#' @section Accessing Results:
+#' \preformatted{
+#' # Cell-level annotations
+#' head(result$Cell_annotations)
+#' #   Cell_barcode Predicted_cell_type Max_score Confidence
+#' # 1  AAACCTGAG... Enterocyte          0.85      0.62
+#' # 2  AAACCTGCA... Goblet cell         0.72      0.45
+#' 
+#' # Summary statistics
+#' result$Summary
+#' #   Cell_type       Count Percentage
+#' # 1 Enterocyte      5432  45.2
+#' # 2 Goblet cell     2156  17.9
+#' 
+#' # Full probability matrix (if return_scores = TRUE)
+#' result$Probability_matrix[1:5, 1:3]
+#' #              Enterocyte Goblet_cell Stem_cell
+#' # AAACCTGAG... 0.85       0.10        0.05
+#' 
+#' # Extract high-confidence cells
+#' high_conf <- result$Cell_annotations$Cell_barcode[
+#'     result$Cell_annotations$Confidence > 0.5
+#' ]
+#' 
+#' # Extract uncertain cells for manual review
+#' uncertain <- result$Cell_annotations$Cell_barcode[
+#'     result$Cell_annotations$Confidence < 0.2
+#' ]
+#' }
+#' 
+#' @family Section_3_Automated_Annotation
+#' @keywords documentation
+NULL
