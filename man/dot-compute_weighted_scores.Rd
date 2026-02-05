@@ -7,6 +7,12 @@
 .compute_weighted_scores(expr_matrix, marker_sets, min_expression)
 }
 \description{
-Compute weighted scores for per-cell annotation
+This function uses an improved weighting scheme that considers:
+\enumerate{
+\item Expression level (log-normalized)
+\item Detection rate (binary: above min_expression threshold)
+\item Marker specificity (how unique is this marker to this cell type)
+\item Expression variability (CV-based: more variable genes are more discriminative)
+}
 }
 \keyword{internal}

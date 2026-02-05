@@ -15,7 +15,8 @@ Celltype_Calculate_PerCell(
   umap_reduction = "umap",
   k_neighbors = 15,
   smoothing_weight = 0.3,
-  min_score = 0.1,
+  min_score = "auto",
+  min_confidence = 1.2,
   return_scores = FALSE,
   ncores = 1,
   chunk_size = 5000,
@@ -47,7 +48,14 @@ coordinates to improve annotation consistency. Default: FALSE.}
 Higher values give more weight to neighbors. Default: 0.3.}
 
 \item{min_score}{Minimum score threshold to assign a cell type. Cells below
-this threshold are labeled "Unassigned". Default: 0.1.}
+this threshold are labeled "Unassigned". Default: "auto" which adaptively
+sets the threshold based on number of cell types (1.5 / n_celltypes).
+Set to a numeric value (e.g., 0.1) to use a fixed threshold.}
+
+\item{min_confidence}{Minimum confidence threshold. Cells with confidence below
+this value are labeled "Unassigned". Confidence is calculated as the ratio
+of max score to second-highest score. Default: 1.2 (max must be 20\% higher
+than second). Set to 1.0 to disable confidence filtering.}
 
 \item{return_scores}{If TRUE, return full score matrix. Default: FALSE.}
 
@@ -67,7 +75,9 @@ A list containing:
 \item Expression_list: List of mean expression matrices per cell type (for verification)
 \item Proportion_list: List of detection proportion matrices per cell type
 \item Prediction_results: Summary data frame with per-cell-type statistics
-\item Probability_matrix: Full cell × cell_type probability matrix
+\item Probability_matrix: Full cell × cell_type probability matrix (normalized)
+\item Raw_score_matrix: Full cell × cell_type raw score matrix (before normalization)
+\item Parameters: List of parameters used including adaptive thresholds
 \item Cell_scores: (if return_scores=TRUE) Same as Probability_matrix
 }
 }

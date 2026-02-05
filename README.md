@@ -333,10 +333,11 @@ SlimR provides two automated annotation approaches: **Cluster-Based Annotation**
 | **Memory** | Low (~800MB for 50k cells) | Higher (~2-2.5GB for 50k cells) |
 | **Resolution** | Coarse (cluster-level) | Fine (cell-level) |
 | **Best For** | Homogeneous, well-separated clusters | Mixed clusters, rare cell types, continuous states |
-| **Confidence Scores** | Cluster-level | Cell-level |
+| **Confidence Scores** | Cluster-level | Cell-level (ratio-based) |
 | **Spatial Context** | Not used | Optional (UMAP smoothing) |
+| **Many Cell Types** | Works well | Adaptive thresholds |
 
-**Recommendation:** Start with cluster-based annotation for initial exploration. Use per-cell annotation when clusters contain mixed populations or when finer resolution is needed.
+**Recommendation:** Start with cluster-based annotation for initial exploration. Use per-cell annotation when clusters contain mixed populations or when finer resolution is needed. For marker lists with many cell types (>30), per-cell annotation with `min_score = "auto"` is recommended.
 
 ### 3.1 Calculate Parameters
 
@@ -534,7 +535,8 @@ SlimR_percell_result <- Celltype_Calculate_PerCell(
     umap_reduction = "umap",
     k_neighbors = 15,
     smoothing_weight = 0.3,
-    min_score = 0.1,
+    min_score = "auto",
+    min_confidence = 1.2,
     return_scores = FALSE,
     verbose = TRUE
     )
@@ -546,9 +548,23 @@ You can use the `min_expression = SlimR_params$min_expression` parameter in the 
 
 *Note: The three scoring methods differ in their approach:*
 
--   **"weighted"**: Combines expression level, detection rate, and marker specificity (CV-based weighting). Best for general use.
+-   **"weighted"**: Combines expression level, detection rate, and marker specificity. Uses combined weighting: `specificity × IDF × CV`. Best for general use.
 -   **"mean"**: Simple average of normalized marker expression. Fastest, good for initial exploration.
--   **"AUCell"**: Rank-based scoring using proportion of markers in top 5% expressed genes. Robust to batch effects and technical variation.
+-   **"AUCell"**: Rank-based scoring with adaptive thresholds. Uses combined scoring (70% binary + 30% rank-weighted). Robust to batch effects and technical variation.
+
+**Adaptive Thresholds**
+
+-   **`min_score = "auto"`**: Automatically sets threshold based on number of cell types (`1.5 / n_celltypes`). This prevents excessive "Unassigned" cells when using marker lists with many cell types (e.g., 30+ subtypes).
+-   **`min_confidence = 1.2`**: Ratio-based confidence filtering. The top score must be at least 20% higher than the second-best score. Set to `1.0` to disable.
+
+**Parameter Recommendations:**
+
+| Scenario | `min_score` | `min_confidence` | Notes |
+|----------|-------------|------------------|-------|
+| Few cell types (<15) | `"auto"` | 1.2 | Default works well |
+| Many cell types (>30) | `"auto"` | 1.1-1.15 | Lower confidence for more assignments |
+| Strict annotation | `"auto"` | 1.3-1.5 | Higher confidence, fewer assignments |
+| Liberal annotation | `"auto"` | 1.0 | Disable confidence filtering |
 
 **UMAP Spatial Smoothing (Optional)**
 

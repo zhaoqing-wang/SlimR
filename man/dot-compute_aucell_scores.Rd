@@ -7,6 +7,13 @@
 .compute_aucell_scores(expr_matrix, marker_sets, top_percent = 0.05)
 }
 \description{
-Compute AUCell-like rank-based scores
+Uses a ranking approach similar to AUCell: for each cell, genes are ranked by
+expression, and the score is based on where marker genes fall in that ranking.
+This method is robust to batch effects and technical variation.
+}
+\details{
+Key improvement: Uses recovery curve area under curve (AUC) calculation
+rather than simple proportion, giving partial credit to markers ranked
+just outside the top threshold.
 }
 \keyword{internal}

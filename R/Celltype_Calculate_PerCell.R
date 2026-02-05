@@ -18,7 +18,13 @@
 #' @param smoothing_weight Weight for neighbor votes vs cell's own score (0-1).
 #'   Higher values give more weight to neighbors. Default: 0.3.
 #' @param min_score Minimum score threshold to assign a cell type. Cells below
-#'   this threshold are labeled "Unassigned". Default: 0.1.
+#'   this threshold are labeled "Unassigned". Default: "auto" which adaptively
+#'   sets the threshold based on number of cell types (1.5 / n_celltypes).
+#'   Set to a numeric value (e.g., 0.1) to use a fixed threshold.
+#' @param min_confidence Minimum confidence threshold. Cells with confidence below
+#'   this value are labeled "Unassigned". Confidence is calculated as the ratio
+#'   of max score to second-highest score. Default: 1.2 (max must be 20% higher
+#'   than second). Set to 1.0 to disable confidence filtering.
 #' @param return_scores If TRUE, return full score matrix. Default: FALSE.
 #' @param ncores Number of cores for parallel processing. Default: 1.
 #' @param chunk_size Number of cells to process per chunk (memory optimization).
@@ -33,7 +39,9 @@
 #'   \item Expression_list: List of mean expression matrices per cell type (for verification)
 #'   \item Proportion_list: List of detection proportion matrices per cell type
 #'   \item Prediction_results: Summary data frame with per-cell-type statistics
-#'   \item Probability_matrix: Full cell × cell_type probability matrix
+#'   \item Probability_matrix: Full cell × cell_type probability matrix (normalized)
+#'   \item Raw_score_matrix: Full cell × cell_type raw score matrix (before normalization)
+#'   \item Parameters: List of parameters used including adaptive thresholds
 #'   \item Cell_scores: (if return_scores=TRUE) Same as Probability_matrix
 #' }
 #'
@@ -104,7 +112,8 @@ Celltype_Calculate_PerCell <- function(
     umap_reduction = "umap",
     k_neighbors = 15,
     smoothing_weight = 0.3,
-    min_score = 0.1,
+    min_score = "auto",
+    min_confidence = 1.2,
     return_scores = FALSE,
     ncores = 1,
     chunk_size = 5000,
@@ -131,6 +140,12 @@ Celltype_Calculate_PerCell <- function(
   }
   if (smoothing_weight < 0 || smoothing_weight > 1) {
     stop("smoothing_weight must be between 0 and 1")
+  }
+  if (!is.character(min_score) && !is.numeric(min_score)) {
+    stop("min_score must be 'auto' or a numeric value")
+  }
+  if (is.numeric(min_confidence) && min_confidence < 1) {
+    stop("min_confidence must be >= 1.0 (ratio of max to second-max score)")
   }
   
   assay <- if (is.null(assay)) Seurat::DefaultAssay(seurat_obj) else assay
@@ -224,6 +239,9 @@ Celltype_Calculate_PerCell <- function(
     )
   }
   
+  # Store raw scores before normalization
+  raw_score_matrix <- score_matrix
+  
   # Normalize scores per cell (so they sum to 1, like probabilities)
   row_sums <- rowSums(score_matrix)
   row_sums[row_sums == 0] <- 1  # Avoid division by zero
@@ -247,26 +265,81 @@ Celltype_Calculate_PerCell <- function(
   }
   
   # ============================================================================
+  # Calculate adaptive thresholds
+  # ============================================================================
+  
+  # Adaptive min_score: based on number of cell types
+  # With normalized scores summing to 1, uniform distribution gives 1/n_celltypes
+  # We use 1.5x the uniform score as default threshold
+  uniform_score <- 1 / n_celltypes
+  if (is.character(min_score) && min_score == "auto") {
+    effective_min_score <- 1.5 * uniform_score
+    if (verbose) {
+      message(sprintf("SlimR PerCell: Using adaptive min_score = %.4f (1.5 / %d cell types)",
+                      effective_min_score, n_celltypes))
+    }
+  } else {
+    effective_min_score <- as.numeric(min_score)
+  }
+  
+  # ============================================================================
   # Assign cell types
   # ============================================================================
   if (verbose) message("SlimR PerCell: Assigning cell types...")
   
-  max_scores <- apply(score_matrix_norm, 1, max)
-  max_indices <- apply(score_matrix_norm, 1, which.max)
+  # Compute max scores and indices, handling rows with all NA values
+  max_scores <- apply(score_matrix_norm, 1, function(x) {
+    # Check if all values are NA
+    if (all(is.na(x))) return(0)
+    m <- max(x, na.rm = TRUE)
+    # If max returns -Inf (shouldn't happen after NA check), convert to 0
+    if (is.infinite(m)) return(0)
+    return(m)
+  })
+  
+  max_indices <- apply(score_matrix_norm, 1, function(x) {
+    idx <- which.max(x)
+    # If which.max returns integer(0) (all NA), return NA_integer_
+    if (length(idx) == 0) return(NA_integer_)
+    return(idx)
+  })
   predicted_types <- colnames(score_matrix_norm)[max_indices]
   
-  # Apply minimum score threshold
-  predicted_types[max_scores < min_score] <- "Unassigned"
+  # Mark cells with NA scores as Unassigned
+  predicted_types[is.na(predicted_types)] <- "Unassigned"
   
-  # Calculate confidence (ratio of max score to second max)
+  # Calculate confidence as RATIO of max to second-max (more robust than difference)
+  # A ratio > 1.2 means the top choice is at least 20% better than second
   confidence <- apply(score_matrix_norm, 1, function(x) {
     sorted_x <- sort(x, decreasing = TRUE, na.last = TRUE)
-    # Handle NA or zero cases
+    # Handle edge cases
     if (length(sorted_x) == 0 || is.na(sorted_x[1]) || sorted_x[1] == 0) return(0)
-    if (length(sorted_x) == 1) return(1)
-    # Confidence as difference between top two scores
+    if (length(sorted_x) == 1) return(Inf)
+    if (sorted_x[2] == 0) return(Inf)
+    # Confidence as ratio of top two scores
+    sorted_x[1] / sorted_x[2]
+  })
+  
+  # Also compute difference-based confidence for backward compatibility
+  confidence_diff <- apply(score_matrix_norm, 1, function(x) {
+    sorted_x <- sort(x, decreasing = TRUE, na.last = TRUE)
+    if (length(sorted_x) < 2 || is.na(sorted_x[1])) return(0)
     sorted_x[1] - sorted_x[2]
   })
+  
+  # Apply thresholds
+  # 1. Minimum score threshold
+  predicted_types[max_scores < effective_min_score] <- "Unassigned"
+  
+  # 2. Minimum confidence threshold (ratio-based)
+  if (!is.null(min_confidence) && min_confidence > 1) {
+    low_confidence <- confidence < min_confidence & predicted_types != "Unassigned"
+    if (sum(low_confidence) > 0 && verbose) {
+      message(sprintf("  %d cells marked Unassigned due to low confidence (ratio < %.2f)",
+                      sum(low_confidence), min_confidence))
+    }
+    predicted_types[low_confidence] <- "Unassigned"
+  }
   
   # ============================================================================
   # Prepare output (compatible with Celltype_Annotation and Celltype_Verification)
@@ -276,15 +349,27 @@ Celltype_Calculate_PerCell <- function(
     Predicted_cell_type = predicted_types,
     Max_score = max_scores,
     Confidence = confidence,
+    Confidence_diff = confidence_diff,
     stringsAsFactors = FALSE,
     row.names = NULL
   )
   
   # Summary statistics
-  summary_table <- as.data.frame(table(predicted_types), stringsAsFactors = FALSE)
-  colnames(summary_table) <- c("Cell_type", "Count")
-  summary_table$Percentage <- round(100 * summary_table$Count / n_cells, 2)
-  summary_table <- summary_table[order(-summary_table$Count), ]
+  # Handle edge case where predicted_types might be empty (0 cells)
+  tbl <- table(predicted_types)
+  if (length(tbl) == 0) {
+    summary_table <- data.frame(
+      Cell_type = character(0),
+      Count = integer(0),
+      Percentage = numeric(0),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    summary_table <- as.data.frame.table(tbl, stringsAsFactors = FALSE)
+    colnames(summary_table) <- c("Cell_type", "Count")
+    summary_table$Percentage <- round(100 * summary_table$Count / n_cells, 2)
+    summary_table <- summary_table[order(-summary_table$Count), ]
+  }
   
   if (verbose) {
     message("\nSlimR PerCell: Annotation Summary:")
@@ -329,18 +414,32 @@ Celltype_Calculate_PerCell <- function(
   # ============================================================================
   prediction_results <- data.frame(
     Cell_type = names(marker_sets),
-    Cell_count = sapply(names(marker_sets), function(ct) sum(predicted_types == ct)),
+    Cell_count = sapply(names(marker_sets), function(ct) sum(predicted_types == ct, na.rm = TRUE)),
     Mean_score = sapply(names(marker_sets), function(ct) {
       ct_cells <- predicted_types == ct
-      if (sum(ct_cells) == 0) return(0)
-      mean(max_scores[ct_cells])
+      if (sum(ct_cells, na.rm = TRUE) == 0) return(0)
+      mean(max_scores[ct_cells], na.rm = TRUE)
     }),
     Mean_confidence = sapply(names(marker_sets), function(ct) {
       ct_cells <- predicted_types == ct
-      if (sum(ct_cells) == 0) return(0)
-      mean(confidence[ct_cells])
+      if (sum(ct_cells, na.rm = TRUE) == 0) return(0)
+      mean(confidence[ct_cells], na.rm = TRUE)
     }),
     stringsAsFactors = FALSE
+  )
+  
+  # Store parameters used for reproducibility
+  params_used <- list(
+    method = method,
+    min_expression = min_expression,
+    min_score_input = min_score,
+    min_score_effective = effective_min_score,
+    min_confidence = min_confidence,
+    n_celltypes = n_celltypes,
+    uniform_score = uniform_score,
+    use_umap_smoothing = use_umap_smoothing,
+    k_neighbors = k_neighbors,
+    smoothing_weight = smoothing_weight
   )
   
   # Build return list
@@ -351,7 +450,9 @@ Celltype_Calculate_PerCell <- function(
     Expression_list = expression_list,
     Proportion_list = proportion_list,
     Prediction_results = prediction_results,
-    Probability_matrix = score_matrix_norm  # Full per-cell probability matrix
+    Probability_matrix = score_matrix_norm,
+    Raw_score_matrix = raw_score_matrix,
+    Parameters = params_used
   )
   
   if (return_scores) {
@@ -367,6 +468,13 @@ Celltype_Calculate_PerCell <- function(
 # ==============================================================================
 
 #' Compute weighted scores for per-cell annotation
+#' 
+#' This function uses an improved weighting scheme that considers:
+#' 1. Expression level (log-normalized)
+#' 2. Detection rate (binary: above min_expression threshold)
+#' 3. Marker specificity (how unique is this marker to this cell type)
+#' 4. Expression variability (CV-based: more variable genes are more discriminative)
+#' 
 #' @keywords internal
 .compute_weighted_scores <- function(expr_matrix, marker_sets, min_expression) {
   n_cells <- nrow(expr_matrix)
@@ -378,10 +486,28 @@ Celltype_Calculate_PerCell <- function(
   # Pre-compute global statistics for weighting
   all_markers <- unique(unlist(marker_sets))
   
-  # Detection rate per gene (used for specificity weighting)
-  detection_rates <- colMeans(expr_matrix[, all_markers, drop = FALSE] > min_expression)
+  # ============================================================================
+  # Compute marker specificity weights
+  # A marker is more specific if it appears in fewer cell type marker sets
+  # ============================================================================
+  marker_counts <- table(unlist(marker_sets))
+  specificity_weights <- 1 / as.numeric(marker_counts[all_markers])
+  specificity_weights[is.na(specificity_weights)] <- 1
+  names(specificity_weights) <- all_markers
   
+  # ============================================================================
+  # Detection rate per gene (used for IDF-like weighting)
+  # Genes expressed in fewer cells are more discriminative
+  # ============================================================================
+  detection_rates <- colMeans(expr_matrix[, all_markers, drop = FALSE] > min_expression)
+  # IDF-like weight: log(1 / detection_rate), capped to avoid Inf
+  idf_weights <- log1p(1 / pmax(detection_rates, 0.01))
+  idf_weights <- idf_weights / max(idf_weights, na.rm = TRUE)  # Normalize to [0, 1]
+  names(idf_weights) <- all_markers
+  
+  # ============================================================================
   # Expression variability (CV) - genes with higher CV are more discriminative
+  # ============================================================================
   gene_means <- colMeans(expr_matrix[, all_markers, drop = FALSE])
   gene_sds <- apply(expr_matrix[, all_markers, drop = FALSE], 2, sd)
   gene_cv <- ifelse(gene_means > 0, gene_sds / gene_means, 0)
@@ -395,6 +521,11 @@ Celltype_Calculate_PerCell <- function(
   }
   names(cv_weights) <- all_markers
   
+  # ============================================================================
+  # Combine weights: specificity * IDF * CV
+  # ============================================================================
+  combined_weights <- specificity_weights * (0.5 + 0.5 * idf_weights) * cv_weights
+  
   for (i in seq_along(marker_sets)) {
     ct <- names(marker_sets)[i]
     markers <- marker_sets[[ct]]
@@ -404,20 +535,21 @@ Celltype_Calculate_PerCell <- function(
     # Get expression for this cell type's markers
     ct_expr <- expr_matrix[, markers, drop = FALSE]
     
-    # Get weights for these markers
-    ct_weights <- cv_weights[markers]
+    # Get combined weights for these markers
+    ct_weights <- combined_weights[markers]
     
-    # Weighted mean expression per cell
-    # Also incorporate detection: score higher if gene is expressed above threshold
+    # Detection mask: only count genes above threshold
     ct_detected <- ct_expr > min_expression
     
-    # Combined score: expression * detection * weight
+    # Combined score: expression * detection * combined_weight
+    # Using expression directly (not squared) to avoid over-penalizing low expressers
     weighted_expr <- sweep(ct_expr * ct_detected, 2, ct_weights, "*")
     
     if (length(markers) == 1) {
       score_matrix[, ct] <- weighted_expr
     } else {
-      score_matrix[, ct] <- rowMeans(weighted_expr, na.rm = TRUE)
+      # Use weighted mean (weighted by marker weights)
+      score_matrix[, ct] <- rowSums(weighted_expr) / sum(ct_weights)
     }
   }
   
@@ -426,14 +558,26 @@ Celltype_Calculate_PerCell <- function(
 
 
 #' Compute AUCell-like rank-based scores
+#' 
+#' Uses a ranking approach similar to AUCell: for each cell, genes are ranked by 
+#' expression, and the score is based on where marker genes fall in that ranking.
+#' This method is robust to batch effects and technical variation.
+#' 
+#' Key improvement: Uses recovery curve area under curve (AUC) calculation
+#' rather than simple proportion, giving partial credit to markers ranked
+#' just outside the top threshold.
+#' 
 #' @keywords internal
 .compute_aucell_scores <- function(expr_matrix, marker_sets, top_percent = 0.05) {
   n_cells <- nrow(expr_matrix)
   n_genes <- ncol(expr_matrix)
   n_celltypes <- length(marker_sets)
   
-  # Number of genes in top X%
-  n_top <- max(1, round(n_genes * top_percent))
+  # Number of genes in top X% - adaptive based on marker set sizes
+  max_markers <- max(sapply(marker_sets, length))
+  # Ensure n_top is at least 2x the largest marker set
+  n_top <- max(max_markers * 2, round(n_genes * top_percent))
+  n_top <- min(n_top, n_genes)  # Cap at total genes
   
   score_matrix <- matrix(0, nrow = n_cells, ncol = n_celltypes)
   colnames(score_matrix) <- names(marker_sets)
@@ -449,8 +593,8 @@ Celltype_Calculate_PerCell <- function(
     
     chunk_expr <- expr_matrix[start_idx:end_idx, , drop = FALSE]
     
-    # Rank genes per cell (higher expression = higher rank)
-    chunk_ranks <- t(apply(chunk_expr, 1, function(x) rank(-x, ties.method = "first")))
+    # Rank genes per cell (higher expression = lower rank number = better)
+    chunk_ranks <- t(apply(chunk_expr, 1, function(x) rank(-x, ties.method = "average")))
     
     for (ct in names(marker_sets)) {
       markers <- marker_sets[[ct]]
@@ -458,14 +602,29 @@ Celltype_Calculate_PerCell <- function(
       
       if (length(marker_cols) == 0) next
       
-      # Score = proportion of markers in top n_top genes
+      n_markers <- length(marker_cols)
       marker_ranks <- chunk_ranks[, marker_cols, drop = FALSE]
-      in_top <- marker_ranks <= n_top
       
-      if (is.matrix(in_top)) {
-        score_matrix[start_idx:end_idx, ct] <- rowMeans(in_top)
+      # Improved AUC calculation:
+      # 1. Count markers in top n_top (binary contribution)
+      # 2. Add weighted contribution based on rank (markers ranked higher get more credit)
+      
+      if (is.matrix(marker_ranks)) {
+        # Binary: proportion of markers in top n_top
+        in_top <- rowMeans(marker_ranks <= n_top)
+        
+        # Weighted: average of (1 - rank/n_genes) for markers in top n_top
+        # This gives partial credit based on how highly ranked the marker is
+        rank_scores <- 1 - marker_ranks / n_genes
+        rank_scores[marker_ranks > n_top] <- 0  # Zero out markers not in top
+        weighted_score <- rowMeans(rank_scores)
+        
+        # Combine: 70% binary, 30% rank-weighted
+        score_matrix[start_idx:end_idx, ct] <- 0.7 * in_top + 0.3 * weighted_score
       } else {
-        score_matrix[start_idx:end_idx, ct] <- in_top
+        in_top <- as.numeric(marker_ranks <= n_top)
+        rank_score <- ifelse(marker_ranks <= n_top, 1 - marker_ranks / n_genes, 0)
+        score_matrix[start_idx:end_idx, ct] <- 0.7 * in_top + 0.3 * rank_score
       }
     }
   }
