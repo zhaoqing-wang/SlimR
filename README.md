@@ -552,7 +552,7 @@ You can use the `min_expression = SlimR_params$min_expression` parameter in the 
 -   "mean": Simple average of normalized marker expression. Fastest, good for initial exploration.
 -   "AUCell": Rank-based scoring with adaptive thresholds. Uses combined scoring (70% binary + 30% rank-weighted). Robust to batch effects and technical variation.
 
-*Adaptive Thresholds*
+*Adaptive Thresholds:*
 
 -   `min_score = "auto"`: Automatically sets threshold based on number of cell types (`1.5 / n_celltypes`). This prevents excessive "Unassigned" cells when using marker lists with many cell types (e.g., 30+ subtypes).
 -   `min_confidence = 1.2`: Ratio-based confidence filtering. The top score must be at least 20% higher than the second-best score. Set to `1.0` to disable.
