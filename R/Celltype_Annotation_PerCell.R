@@ -132,17 +132,30 @@ Celltype_Annotation_PerCell <- function(
         ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
       
       if (plot_confidence) {
-        p2 <- Seurat::FeaturePlot(
-          seurat_obj,
-          features = paste0(annotation_col, "_confidence"),
-          reduction = "umap",
-          pt.size = 0.5
-        ) +
-          ggplot2::ggtitle("Annotation Confidence") +
-          ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
-        
-        combined_plot <- patchwork::wrap_plots(p1, p2, ncol = 2)
-        print(combined_plot)
+        confidence_col <- paste0(annotation_col, "_confidence")
+        confidence_values <- seurat_obj@meta.data[[confidence_col]]
+        finite_confidence <- is.finite(confidence_values)
+
+        if (!any(finite_confidence)) {
+          warning("Confidence values are all non-finite. Skipping confidence plot.")
+          print(p1)
+        } else {
+          if (any(!finite_confidence)) {
+            seurat_obj@meta.data[[confidence_col]][!finite_confidence] <- NA_real_
+          }
+
+          p2 <- Seurat::FeaturePlot(
+            seurat_obj,
+            features = confidence_col,
+            reduction = "umap",
+            pt.size = 0.5
+          ) +
+            ggplot2::ggtitle("Annotation Confidence") +
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"))
+
+          combined_plot <- patchwork::wrap_plots(p1, p2, ncol = 2)
+          print(combined_plot)
+        }
       } else {
         print(p1)
       }
