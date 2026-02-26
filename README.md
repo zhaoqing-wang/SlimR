@@ -41,7 +41,9 @@ SlimR first uses adaptive machine learning for parameter optimization, and then 
     -   [4.2 Annotation Feature Plots](#42-annotation-feature-plots)
     -   [4.3 Annotation Combined Plots](#43-annotation-combined-plots)
 5.  [Other Functions Provided by SlimR](#5-other-functions-provided-by-slimr)
-6.  [Conclusion](#6-conclusion)
+6.  [Citation](#6-citation)
+7.  [License](#7-license)
+8.  [Contact](#8-contact)
 
 ------------------------------------------------------------------------
 
@@ -782,10 +784,17 @@ Celltype_annotation_Excel(
 
 *Note: To call this function, set the parameter `gene_list_type = "Excel"` in the function `Celltype_Annotation_Features`. This function also works with `Markers_list` that contains either no metric information or metric information generated in other ways.*
 
-## 6. Conclusion
+## 6. Citation
 
-Thank you for using SlimR. For questions, issues, or suggestions, please submit them in the issue section or discussion section on GitHub (suggested) or send an email (alternative):
+```
+Wang Z (2026). SlimR: Adaptive Machine Learning-Powered, Context-Matching Tool for Single-Cell and Spatial Transcriptomics Annotation.
+https://github.com/zhaoqing-wang/SlimR
+```
 
-zhaoqingwang\@mail.sdu.edu.cn
+## 7. License
 
-**Zhaoqing Wang**
+[MIT](LICENSE.md)
+
+## 8. Contact
+
+**Author:** Zhaoqing Wang ([ORCID](https://orcid.org/0000-0001-8348-7245)) | **Email:** <zhaoqingwang@mail.sdu.edu.cn> | **Issues:** [SlimR Issues](https://github.com/zhaoqing-wang/SlimR/issues)
