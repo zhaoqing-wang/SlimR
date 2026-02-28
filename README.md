@@ -482,7 +482,7 @@ https://github.com/zhaoqing-wang/SlimR
 
 ## 6. License
 
-[MIT](LICENSE.md)
+[MIT](LICENSE)
 
 ## 7. Contact
 
