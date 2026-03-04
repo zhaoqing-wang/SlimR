@@ -6,3 +6,5 @@
 ^docs/
 ^.vscode/
 ^LICENSE\.md$
+^\.positai$
+^\.claude$

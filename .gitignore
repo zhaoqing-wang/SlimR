@@ -4,3 +4,4 @@
 *.Rproj
 .vscode
 /.quarto/
+.positai
