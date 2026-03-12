@@ -1,3 +1,10 @@
+## Version 1.1.2 (2026-03-12)
+
+*   **New Features**
+    *   Integrated the ScType marker database for tissue-aware cell type annotation.
+    *   Added `Markers_filter_ScType()` for filtering ScType markers by tissue type and cell name.
+    *   Added `ScType`, `ScType_raw`, and `ScType_table` data objects.
+
 ## Version 1.1.1 (2026-02-05)
 
 This release introduces a major new feature for fine-grained cell type identification alongside significant improvements to accuracy, performance, and usability.

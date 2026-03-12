@@ -29,7 +29,10 @@ Other Section_0_Database:
 \code{\link{Markers_list_TCellSI}},
 \code{\link{Markers_list_scIBD}},
 \code{\link{PanglaoDB}},
-\code{\link{PanglaoDB_table}}
+\code{\link{PanglaoDB_table}},
+\code{\link{ScType}},
+\code{\link{ScType_raw}},
+\code{\link{ScType_table}}
 }
 \concept{Section_0_Database}
 \keyword{datasets}

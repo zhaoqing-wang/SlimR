@@ -59,6 +59,53 @@ test_that("Markers_filter_PanglaoDB works with built-in database", {
   }
 })
 
+test_that("Markers_filter_ScType exists and validates inputs", {
+  expect_true(exists("Markers_filter_ScType"))
+  expect_type(Markers_filter_ScType, "closure")
+})
+
+test_that("Markers_filter_ScType works with built-in database", {
+  skip_if_limited()
+  
+  if (!exists("ScType", where = "package:SlimR")) {
+    skip("ScType database not available")
+  }
+  
+  ScType <- SlimR::ScType
+  
+  result <- Markers_filter_ScType(
+    ScType,
+    tissue_type = "Immune system"
+  )
+  
+  expect_type(result, "list")
+  expect_true(length(result) > 0)
+  
+  # Check structure of first element
+  if (length(result) > 0) {
+    expect_s3_class(result[[1]], "data.frame")
+    expect_true("marker" %in% colnames(result[[1]]))
+  }
+})
+
+test_that("Markers_filter_ScType rejects missing columns", {
+  bad_df <- data.frame(a = 1, b = 2)
+  expect_error(Markers_filter_ScType(bad_df, tissue_type = "Brain"),
+               "missing necessary columns")
+})
+
+test_that("Markers_filter_ScType errors on empty filter result", {
+  skip_if_limited()
+  
+  if (!exists("ScType", where = "package:SlimR")) {
+    skip("ScType database not available")
+  }
+  
+  ScType <- SlimR::ScType
+  expect_error(Markers_filter_ScType(ScType, tissue_type = "NonexistentTissue"),
+               "Filter result is empty")
+})
+
 test_that("Read_seurat_markers exists and validates inputs", {
   expect_true(exists("Read_seurat_markers"))
   expect_type(Read_seurat_markers, "closure")

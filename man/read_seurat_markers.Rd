@@ -68,6 +68,7 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 Other Section_2_Standardized_Markers_List: 
 \code{\link{Markers_filter_Cellmarker2}()},
 \code{\link{Markers_filter_PanglaoDB}()},
+\code{\link{Markers_filter_ScType}()},
 \code{\link{Read_excel_markers}()}
 }
 \concept{Section_2_Standardized_Markers_List}

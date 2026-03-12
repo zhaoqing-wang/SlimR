@@ -16,9 +16,10 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
 2. [Standardized Markers_list Input](#2-standardized-markers_list-input)
     - [2.1 From Cellmarker2 Database](#21-from-cellmarker2-database)
     - [2.2 From PanglaoDB Database](#22-from-panglaodb-database)
-    - [2.3 From Seurat Objects](#23-from-seurat-objects)
-    - [2.4 From Excel Tables](#24-from-excel-tables)
-    - [2.5 Built-in Markers Lists](#25-built-in-markers-lists)
+    - [2.3 From ScType Database](#23-from-sctype-database)
+    - [2.4 From Seurat Objects](#24-from-seurat-objects)
+    - [2.5 From Excel Tables](#25-from-excel-tables)
+    - [2.6 Built-in Markers Lists](#26-built-in-markers-lists)
 3. [Automated Annotation Workflow](#3-automated-annotation-workflow)
     - [3.1 Calculate Parameter](#31-calculate-parameter)
     - [3.2 Cluster-Based Annotation](#32-cluster-based-annotation)
@@ -135,7 +136,33 @@ View(PanglaoDB_table)
 
 </details>
 
-### 2.3 From Seurat Objects
+### 2.3 From ScType Database
+
+**Reference:** *Ianevski et al. (2022) [doi:10.1038/s41467-022-28803-w](https://doi.org/10.1038/s41467-022-28803-w)*
+
+``` r
+ScType <- SlimR::ScType
+
+Markers_list_ScType <- Markers_filter_ScType(
+  ScType,
+  tissue_type = "Immune system",
+  cell_name = NULL
+)
+```
+
+**Important: Specify `tissue_type` for accurate annotations.**
+
+<details>
+<summary><b>Optional: Explore database metadata</b></summary>
+
+``` r
+ScType_table <- SlimR::ScType_table
+View(ScType_table)
+```
+
+</details>
+
+### 2.4 From Seurat Objects
 
 ``` r
 seurat_markers <- Seurat::FindAllMarkers(
@@ -176,7 +203,7 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 
 </details>
 
-### 2.4 From Excel Tables
+### 2.5 From Excel Tables
 
 **Format:** Each sheet name = cell type, first row = headers, first column = markers, subsequent columns = metrics (optional).
 
@@ -186,7 +213,7 @@ Markers_list_Excel <- Read_excel_markers("D:/Laboratory/Marker_load.xlsx")
 
 *If your Excel file lacks column headers, set `has_colnames = FALSE`.*
 
-### 2.5 Built-in Markers Lists
+### 2.6 Built-in Markers Lists
 
 SlimR includes curated marker lists for specific annotation tasks:
 
