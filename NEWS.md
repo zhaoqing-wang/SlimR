@@ -1,6 +1,7 @@
 ## Version 1.1.3 (2026-03-16)
 
-*   **Improvements**
+*   **Bug Fixes**
+    *   **AUCell scoring now uses full-transcriptome ranking.** Previously, genes were ranked only among marker genes rather than the entire transcriptome, producing biologically incorrect percentile thresholds. The corrected implementation ranks all genes in the assay for each cell (chunked for memory efficiency), consistent with the original AUCell methodology.
     *   Removed improper `library()` calls from `Celltype_Calculate()` to comply with R packaging best practices. All dependencies are now accessed exclusively through NAMESPACE imports, preventing namespace pollution.
     *   Fixed ggplot2 deprecation warning: replaced `geom_line(size = ...)` with `geom_line(linewidth = ...)` in ROC curve plotting.
 

@@ -2,18 +2,33 @@
 % Please edit documentation in R/Celltype_Calculate_PerCell.R
 \name{.compute_aucell_scores}
 \alias{.compute_aucell_scores}
-\title{Compute AUCell-like rank-based scores}
+\title{Compute AUCell-like rank-based scores using full transcriptome ranking}
 \usage{
-.compute_aucell_scores(expr_matrix, marker_sets, top_percent = 0.05)
+.compute_aucell_scores(
+  expr_matrix,
+  marker_sets,
+  top_percent = 0.05,
+  seurat_obj = NULL,
+  assay = NULL
+)
+}
+\arguments{
+\item{expr_matrix}{Matrix of expression values (cells x marker genes only).}
+
+\item{marker_sets}{Named list of marker gene vectors per cell type.}
+
+\item{top_percent}{Fraction of the transcriptome considered "top-ranked".}
+
+\item{seurat_obj}{Optional Seurat object for full-transcriptome ranking.
+When provided, genes are ranked across all features in the assay rather
+than only among marker genes, yielding biologically correct AUCell scores.}
+
+\item{assay}{Assay name to use from the Seurat object.}
 }
 \description{
-Uses a ranking approach similar to AUCell: for each cell, genes are ranked by
-expression, and the score is based on where marker genes fall in that ranking.
-This method is robust to batch effects and technical variation.
-}
-\details{
-Key improvement: Uses recovery curve area under curve (AUC) calculation
-rather than simple proportion, giving partial credit to markers ranked
-just outside the top threshold.
+For each cell, all genes in the transcriptome are ranked by expression.
+Marker gene scores reflect where markers fall in this genome-wide ranking,
+consistent with the original AUCell methodology. This ensures that the
+"top X\%" threshold is meaningful relative to the full expression landscape.
 }
 \keyword{internal}

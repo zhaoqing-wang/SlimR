@@ -74,7 +74,7 @@
 #' @export
 #' @family Section_3_Automated_Annotation
 #'
-#' @importFrom Seurat DefaultAssay FetchData Embeddings
+#' @importFrom Seurat DefaultAssay FetchData Embeddings GetAssayData
 #' @importFrom stats dist sd
 #'
 #' @examples
@@ -231,11 +231,13 @@ Celltype_Calculate_PerCell <- function(
     }
     
   } else if (method == "AUCell") {
-    # Rank-based scoring (AUCell-like)
+    # Rank-based scoring (AUCell-like) using full transcriptome for ranking
     score_matrix <- .compute_aucell_scores(
       expr_matrix = expr_matrix,
       marker_sets = marker_sets,
-      top_percent = 0.05  # Top 5% of genes
+      top_percent = 0.05,
+      seurat_obj = seurat_obj,
+      assay = assay
     )
   }
   
@@ -557,78 +559,104 @@ Celltype_Calculate_PerCell <- function(
 }
 
 
-#' Compute AUCell-like rank-based scores
-#' 
-#' Uses a ranking approach similar to AUCell: for each cell, genes are ranked by 
-#' expression, and the score is based on where marker genes fall in that ranking.
-#' This method is robust to batch effects and technical variation.
-#' 
-#' Key improvement: Uses recovery curve area under curve (AUC) calculation
-#' rather than simple proportion, giving partial credit to markers ranked
-#' just outside the top threshold.
-#' 
+#' Compute AUCell-like rank-based scores using full transcriptome ranking
+#'
+#' For each cell, all genes in the transcriptome are ranked by expression.
+#' Marker gene scores reflect where markers fall in this genome-wide ranking,
+#' consistent with the original AUCell methodology. This ensures that the
+#' "top X%" threshold is meaningful relative to the full expression landscape.
+#'
+#' @param expr_matrix Matrix of expression values (cells x marker genes only).
+#' @param marker_sets Named list of marker gene vectors per cell type.
+#' @param top_percent Fraction of the transcriptome considered "top-ranked".
+#' @param seurat_obj Optional Seurat object for full-transcriptome ranking.
+#'   When provided, genes are ranked across all features in the assay rather
+#'   than only among marker genes, yielding biologically correct AUCell scores.
+#' @param assay Assay name to use from the Seurat object.
+#'
 #' @keywords internal
-.compute_aucell_scores <- function(expr_matrix, marker_sets, top_percent = 0.05) {
+#'
+#' @importFrom Seurat GetAssayData
+.compute_aucell_scores <- function(expr_matrix, marker_sets, top_percent = 0.05,
+                                    seurat_obj = NULL, assay = NULL) {
   n_cells <- nrow(expr_matrix)
-  n_genes <- ncol(expr_matrix)
   n_celltypes <- length(marker_sets)
-  
-  # Number of genes in top X% - adaptive based on marker set sizes
+  all_markers <- unique(unlist(marker_sets))
+
+  # Determine total gene count: full transcriptome if available, else marker-only
+
+  use_full <- !is.null(seurat_obj) && !is.null(assay)
+  if (use_full) {
+    n_total_genes <- nrow(seurat_obj[[assay]])
+  } else {
+    n_total_genes <- ncol(expr_matrix)
+  }
+
+  # Adaptive n_top: at least 2x largest marker set, at least top_percent of genome
   max_markers <- max(sapply(marker_sets, length))
-  # Ensure n_top is at least 2x the largest marker set
-  n_top <- max(max_markers * 2, round(n_genes * top_percent))
-  n_top <- min(n_top, n_genes)  # Cap at total genes
-  
+  n_top <- max(max_markers * 2, round(n_total_genes * top_percent))
+  n_top <- min(n_top, n_total_genes)
+
   score_matrix <- matrix(0, nrow = n_cells, ncol = n_celltypes)
   colnames(score_matrix) <- names(marker_sets)
-  
-  # For each cell, rank genes by expression
-  # Using a chunked approach for memory efficiency
-  chunk_size <- 1000
+
+  chunk_size <- 500
   n_chunks <- ceiling(n_cells / chunk_size)
-  
+
+  # Pre-fetch sparse expression matrix once if using full transcriptome
+  if (use_full) {
+    full_data <- tryCatch(
+      Seurat::GetAssayData(seurat_obj, assay = assay, layer = "data"),
+      error = function(e) Seurat::GetAssayData(seurat_obj, assay = assay, slot = "data")
+    )
+  }
+
   for (chunk in seq_len(n_chunks)) {
     start_idx <- (chunk - 1) * chunk_size + 1
     end_idx <- min(chunk * chunk_size, n_cells)
-    
-    chunk_expr <- expr_matrix[start_idx:end_idx, , drop = FALSE]
-    
-    # Rank genes per cell (higher expression = lower rank number = better)
-    chunk_ranks <- t(apply(chunk_expr, 1, function(x) rank(-x, ties.method = "average")))
-    
+    cell_indices <- start_idx:end_idx
+    cell_names <- rownames(expr_matrix)[cell_indices]
+
+    if (use_full) {
+      # Rank all genes per cell using full transcriptome (genes x cells sparse)
+      chunk_full <- as.matrix(full_data[, cell_names, drop = FALSE])
+      # Rank per cell (column): higher expression = lower rank
+      chunk_all_ranks <- apply(chunk_full, 2, function(x) rank(-x, ties.method = "average"))
+      # Extract only marker gene ranks, transpose to cells x markers
+      marker_idx <- match(all_markers, rownames(chunk_full))
+      marker_idx <- marker_idx[!is.na(marker_idx)]
+      marker_names <- rownames(chunk_full)[marker_idx]
+      chunk_marker_ranks <- t(chunk_all_ranks[marker_idx, , drop = FALSE])
+      colnames(chunk_marker_ranks) <- marker_names
+    } else {
+      # Fallback: rank only among marker genes (less accurate)
+      chunk_expr <- expr_matrix[cell_indices, , drop = FALSE]
+      chunk_marker_ranks <- t(apply(chunk_expr, 1, function(x) rank(-x, ties.method = "average")))
+    }
+
     for (ct in names(marker_sets)) {
       markers <- marker_sets[[ct]]
-      marker_cols <- which(colnames(expr_matrix) %in% markers)
-      
+      marker_cols <- which(colnames(chunk_marker_ranks) %in% markers)
       if (length(marker_cols) == 0) next
-      
-      n_markers <- length(marker_cols)
-      marker_ranks <- chunk_ranks[, marker_cols, drop = FALSE]
-      
-      # Improved AUC calculation:
-      # 1. Count markers in top n_top (binary contribution)
-      # 2. Add weighted contribution based on rank (markers ranked higher get more credit)
-      
-      if (is.matrix(marker_ranks)) {
-        # Binary: proportion of markers in top n_top
-        in_top <- rowMeans(marker_ranks <= n_top)
-        
-        # Weighted: average of (1 - rank/n_genes) for markers in top n_top
-        # This gives partial credit based on how highly ranked the marker is
-        rank_scores <- 1 - marker_ranks / n_genes
-        rank_scores[marker_ranks > n_top] <- 0  # Zero out markers not in top
+
+      mr <- chunk_marker_ranks[, marker_cols, drop = FALSE]
+
+      # Binary: proportion of markers in top n_top
+      # Rank-weighted: partial credit based on how high in the ranking
+      if (is.matrix(mr) && nrow(mr) > 0) {
+        in_top <- rowMeans(mr <= n_top)
+        rank_scores <- 1 - mr / n_total_genes
+        rank_scores[mr > n_top] <- 0
         weighted_score <- rowMeans(rank_scores)
-        
-        # Combine: 70% binary, 30% rank-weighted
-        score_matrix[start_idx:end_idx, ct] <- 0.7 * in_top + 0.3 * weighted_score
+        score_matrix[cell_indices, ct] <- 0.7 * in_top + 0.3 * weighted_score
       } else {
-        in_top <- as.numeric(marker_ranks <= n_top)
-        rank_score <- ifelse(marker_ranks <= n_top, 1 - marker_ranks / n_genes, 0)
-        score_matrix[start_idx:end_idx, ct] <- 0.7 * in_top + 0.3 * rank_score
+        in_top <- as.numeric(mr <= n_top)
+        rank_score <- ifelse(mr <= n_top, 1 - mr / n_total_genes, 0)
+        score_matrix[cell_indices, ct] <- 0.7 * in_top + 0.3 * rank_score
       }
     }
   }
-  
+
   return(score_matrix)
 }
 
