@@ -104,12 +104,11 @@ Celltype_Calculate <- function(
     colour_low = "navy",
     colour_high = "firebrick3"
 ) {
-  required_packages <- c("ggplot2", "patchwork", "dplyr", "scales", "tidyr", "gridExtra", "gtable", "grid", "pheatmap")
-  for (pkg in required_packages) {
+  # Verify required packages are available (all imported via NAMESPACE)
+  for (pkg in c("pheatmap", "scales")) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
       stop(sprintf("Please install the required package: %s", pkg))
     }
-    library(pkg, character.only = TRUE)
   }
 
   if (plot_AUC) compute_AUC <- TRUE
@@ -533,7 +532,7 @@ Celltype_Calculate <- function(
       colors <- scales::hue_pal()(color_count)
 
       auc_plot <- ggplot(combined_df, aes(.data$FPR, y = .data$TPR, color = .data$label)) +
-        geom_line(size = 1) +
+        geom_line(linewidth = 1) +
         geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
         labs(
           title = "ROC Curves for Predicted Cell Types | SlimR",

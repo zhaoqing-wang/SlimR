@@ -1,3 +1,9 @@
+## Version 1.1.3 (2026-03-16)
+
+*   **Improvements**
+    *   Removed improper `library()` calls from `Celltype_Calculate()` to comply with R packaging best practices. All dependencies are now accessed exclusively through NAMESPACE imports, preventing namespace pollution.
+    *   Fixed ggplot2 deprecation warning: replaced `geom_line(size = ...)` with `geom_line(linewidth = ...)` in ROC curve plotting.
+
 ## Version 1.1.2 (2026-03-12)
 
 *   **New Features**
