@@ -1,4 +1,4 @@
-## Version 1.1.3 (2026-03-26)
+## Version 1.1.3 (2026-04-07)
 
 *   **Bug Fixes**
     *   **AUCell scoring now uses full-transcriptome ranking.** Previously, genes were ranked only among marker genes rather than the entire transcriptome, producing biologically incorrect percentile thresholds. The corrected implementation ranks all genes in the assay for each cell (chunked for memory efficiency), consistent with the original AUCell methodology.
