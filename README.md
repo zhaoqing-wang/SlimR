@@ -145,7 +145,7 @@ ScType <- SlimR::ScType
 
 Markers_list_ScType <- Markers_filter_ScType(
   ScType,
-  tissue_type = "Immune system",
+  tissue_type = "Intestine",
   cell_name = NULL
 )
 ```
