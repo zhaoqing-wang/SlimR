@@ -1,3 +1,11 @@
+## Version 1.1.4 (2026-04-23)
+
+*   **New Features**
+    *   Added a ASCII startup banner that displays when the package is attached.
+    
+*   **Improvements**
+    *   Optimized citation output formatting and reduced duplication in `.onAttach`.
+
 ## Version 1.1.3 (2026-04-07)
 
 *   **Bug Fixes**
