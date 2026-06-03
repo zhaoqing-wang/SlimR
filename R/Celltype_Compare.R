@@ -94,7 +94,6 @@ Celltype_Compare <- function(
     color_high = "navy",
     show_plot = TRUE
 ) {
-  # Align by shared cell barcodes, with automatic normalization
   if (is.null(barcode_col)) {
     label_cells <- colnames(sce_label)
     sce_cells <- colnames(sce)
@@ -185,44 +184,38 @@ Celltype_Compare <- function(
   ) |>
     dplyr::filter(!is.na(sub_cell_type), !is.na(main_group))
 
-  # Comparison table (counts)
   comparison_table <- df |>
-    dplyr::count(sub_cell_type, main_group, name = "n") |>
+    dplyr::group_by(.data$sub_cell_type, .data$main_group) |>
+    dplyr::summarise(n = dplyr::n(), .groups = "drop") |>
     dplyr::arrange(dplyr::desc(.data$n))
 
-  # Proportion table (within each main_group column)
   proportion_table <- comparison_table |>
     dplyr::group_by(.data$main_group) |>
     dplyr::mutate(prop = .data$n / sum(.data$n)) |>
     dplyr::ungroup()
 
-  # Wide count and proportion tables (rows=sub_cell_type, cols=main_group)
   count_table <- comparison_table |>
     tidyr::pivot_wider(
-    names_from = main_group,
-    values_from = n,
-    values_fill = 0
-  ) |>
+      names_from = main_group,
+      values_from = n,
+      values_fill = 0
+    ) |>
     dplyr::arrange(.data$sub_cell_type)
 
-  # Column-wise proportion (robust to zero columns)
   prop_table <- count_table
   col_sums <- colSums(prop_table[, -1, drop = FALSE])
-  # Avoid division by zero: if a column sum is zero, keep zeros
   prop_table[, -1] <- sweep(prop_table[, -1, drop = FALSE], 2, col_sums, FUN = "/")
   prop_table[, -1][is.na(prop_table[, -1])] <- 0
 
-  # Main group to dominant sub_cell_type mapping
   main_to_sub <- comparison_table |>
     dplyr::group_by(.data$main_group) |>
     dplyr::slice_max(order_by = .data$n, n = 1, with_ties = FALSE) |>
     dplyr::ungroup() |>
     dplyr::arrange(.data$main_group)
 
-  # Plot: heatmap of proportions
   comparison_plot <- ggplot2::ggplot(
     proportion_table,
-    ggplot2::aes(x = main_group, y = sub_cell_type, fill = prop)
+    ggplot2::aes(x = .data$main_group, y = .data$sub_cell_type, fill = .data$prop)
   ) +
     ggplot2::geom_tile(color = "grey70", linewidth = 0.2) +
     ggplot2::scale_fill_gradient(
