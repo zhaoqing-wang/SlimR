@@ -24,7 +24,7 @@ ScType_raw
 The original ScType marker database before processing.
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

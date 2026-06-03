@@ -43,12 +43,12 @@ Average expression of genes in the input "Seurat" object given
 Calculate gene set expression and infer probabilities with control datasets (Use in package)
 }
 \seealso{
-Other Section_1_Functions_Use_in_Package: 
-\code{\link{calculate_cluster_variability}()},
-\code{\link{calculate_expression}()},
-\code{\link{calculate_expression_skewness}()},
-\code{\link{compute_adaptive_parameters}()},
-\code{\link{estimate_batch_effect}()},
-\code{\link{extract_dataset_features}()}
+Other Section_1_Functions_Use_in_Package:
+\code{\link[=calculate_cluster_variability]{calculate_cluster_variability()}},
+\code{\link[=calculate_expression]{calculate_expression()}},
+\code{\link[=calculate_expression_skewness]{calculate_expression_skewness()}},
+\code{\link[=compute_adaptive_parameters]{compute_adaptive_parameters()}},
+\code{\link[=estimate_batch_effect]{estimate_batch_effect()}},
+\code{\link[=extract_dataset_features]{extract_dataset_features()}}
 }
 \concept{Section_1_Functions_Use_in_Package}

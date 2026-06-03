@@ -227,14 +227,14 @@ uncertain <- result$Cell_annotations$Cell_barcode[
 }
 
 \seealso{
-Other Section_3_Automated_Annotation: 
-\code{\link{Celltype_Annotation}()},
-\code{\link{Celltype_Annotation_PerCell}()},
-\code{\link{Celltype_Calculate}()},
-\code{\link{Celltype_Calculate_PerCell}()},
-\code{\link{Celltype_Verification}()},
-\code{\link{Celltype_Verification_PerCell}()},
-\code{\link{Parameter_Calculate}()}
+Other Section_3_Automated_Annotation:
+\code{\link[=Celltype_Annotation]{Celltype_Annotation()}},
+\code{\link[=Celltype_Annotation_PerCell]{Celltype_Annotation_PerCell()}},
+\code{\link[=Celltype_Calculate]{Celltype_Calculate()}},
+\code{\link[=Celltype_Calculate_PerCell]{Celltype_Calculate_PerCell()}},
+\code{\link[=Celltype_Verification]{Celltype_Verification()}},
+\code{\link[=Celltype_Verification_PerCell]{Celltype_Verification_PerCell()}},
+\code{\link[=Parameter_Calculate]{Parameter_Calculate()}}
 }
 \concept{Section_3_Automated_Annotation}
 \keyword{documentation}

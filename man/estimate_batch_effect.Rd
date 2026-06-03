@@ -19,12 +19,12 @@ Roughly estimates the potential impact of batch effects
 using available metadata.
 }
 \seealso{
-Other Section_1_Functions_Use_in_Package: 
-\code{\link{calculate_cluster_variability}()},
-\code{\link{calculate_expression}()},
-\code{\link{calculate_expression_skewness}()},
-\code{\link{calculate_probability}()},
-\code{\link{compute_adaptive_parameters}()},
-\code{\link{extract_dataset_features}()}
+Other Section_1_Functions_Use_in_Package:
+\code{\link[=calculate_cluster_variability]{calculate_cluster_variability()}},
+\code{\link[=calculate_expression]{calculate_expression()}},
+\code{\link[=calculate_expression_skewness]{calculate_expression_skewness()}},
+\code{\link[=calculate_probability]{calculate_probability()}},
+\code{\link[=compute_adaptive_parameters]{compute_adaptive_parameters()}},
+\code{\link[=extract_dataset_features]{extract_dataset_features()}}
 }
 \concept{Section_1_Functions_Use_in_Package}

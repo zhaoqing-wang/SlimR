@@ -31,7 +31,7 @@ a list of marker genes for specific cell types using
 \code{\link{Markers_filter_ScType}}.
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

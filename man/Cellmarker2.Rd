@@ -22,7 +22,7 @@ The dataset can be filtered based on species, tissue class, tissue type,
 cancer type, and cell type to generate a list of marker genes for specific cell types.
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},
 \code{\link{Markers_list_PCTAM}},

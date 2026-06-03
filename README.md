@@ -25,9 +25,11 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [3.2 Cluster-Based Annotation](#32-cluster-based-annotation)
     - [3.3 Per-Cell Annotation](#33-per-cell-annotation)
 4. [Semi-Automated Annotation Workflow](#4-semi-automated-annotation-workflow)
-5. [Citation](#5-citation)
-6. [License](#6-license)
-7. [Contact](#7-contact)
+5. [Other Functions Provided](#5-other-functions-provided)
+    - [5.1 Cell type mapping](#51-cell-type-mapping)
+6. [Citation](#6-citation)
+7. [License](#7-license)
+8. [Contact](#8-contact)
 
 ---
 
@@ -500,17 +502,37 @@ Celltype_Annotation_Combined(
 
 ---
 
-## 5. Citation
+## 5. Other Functions Provided
+
+### 5.1 Cell type mapping
+
+Cross‑tabulate cell type labels from one Seurat object with a grouping column from another Seurat object. The function automatically aligns cell barcodes using multiple normalization strategies and returns count tables, column‑wise proportion tables, a dominant mapping, and a heatmap.
+
+```r
+result <- Celltype_Compare(
+  sce_label = seurat_obj1,
+  sce = seurat_obj2,
+  label_col = "cell_type",
+  group_col = "cluster"
+)
+
+# Access results
+head(result$prop_table)   # column-wise proportions
+print(result$plot)         # heatmap of proportions
+result$main_to_sub         # dominant cell type per group
+```
+
+## 6. Citation
 
 ```
 Wang Z (2026). SlimR: Adaptive Machine Learning-Powered, Context-Matching Tool for Single-Cell and Spatial Transcriptomics Annotation.
 https://github.com/zhaoqing-wang/SlimR
 ```
 
-## 6. License
+## 7. License
 
 [MIT](https://github.com/zhaoqing-wang/SlimR/blob/main/LICENSE.md)
 
-## 7. Contact
+## 8. Contact
 
 **Author:** Zhaoqing Wang ([ORCID](https://orcid.org/0000-0001-8348-7245)) | **Email:** <zhaoqingwang@mail.sdu.edu.cn> | **Issues:** [SlimR Issues](https://github.com/zhaoqing-wang/SlimR/issues)

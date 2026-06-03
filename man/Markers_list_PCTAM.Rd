@@ -22,7 +22,7 @@ The data source is "https://doi.org/10.1016/j.it.2022.04.008",
 and the reference literature is: Ruo-Yu Ma et al. (2022) \url{doi:10.1016/j.it.2022.04.008}.
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

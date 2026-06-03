@@ -22,7 +22,7 @@ A list of frequency tables summarizing the ScType database, useful for
 exploring available tissue types and cell types before filtering.
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

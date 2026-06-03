@@ -22,7 +22,7 @@ The data source is "https://doi.org/10.1126/science.abe6474",
 and the reference literature is: L. Zheng et al. (2021) \url{doi:10.1126/science.abe6474}.
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

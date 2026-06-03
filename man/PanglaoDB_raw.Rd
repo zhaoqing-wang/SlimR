@@ -20,7 +20,7 @@ A dataset containing marker genes for different cell types from PanglaoDB
 This dataset is used to filter and create a standardized marker list.'
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

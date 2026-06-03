@@ -62,8 +62,8 @@ Celltype_Annotation_Combined(seurat_obj = sce,
 
 }
 \seealso{
-Other Section_4_Semi_Automated_Annotation: 
-\code{\link{Celltype_Annotation_Features}()},
-\code{\link{Celltype_Annotation_Heatmap}()}
+Other Section_4_Semi_Automated_Annotation:
+\code{\link[=Celltype_Annotation_Features]{Celltype_Annotation_Features()}},
+\code{\link[=Celltype_Annotation_Heatmap]{Celltype_Annotation_Heatmap()}}
 }
 \concept{Section_4_Semi_Automated_Annotation}

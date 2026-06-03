@@ -34,10 +34,10 @@ Markers_list_ScType <- Markers_filter_ScType(
 
 }
 \seealso{
-Other Section_2_Standardized_Markers_List: 
-\code{\link{Markers_filter_Cellmarker2}()},
-\code{\link{Markers_filter_PanglaoDB}()},
-\code{\link{Read_excel_markers}()},
-\code{\link{Read_seurat_markers}()}
+Other Section_2_Standardized_Markers_List:
+\code{\link[=Markers_filter_Cellmarker2]{Markers_filter_Cellmarker2()}},
+\code{\link[=Markers_filter_PanglaoDB]{Markers_filter_PanglaoDB()}},
+\code{\link[=Read_excel_markers]{Read_excel_markers()}},
+\code{\link[=Read_seurat_markers]{Read_seurat_markers()}}
 }
 \concept{Section_2_Standardized_Markers_List}

@@ -24,7 +24,7 @@ Note: The 'Markers_list_scIBD' was generated using section 2.5.2 and the paramet
 'sort_by = "logFC"' and 'gene_filter = 20' were set.
 }
 \seealso{
-Other Section_0_Database: 
+Other Section_0_Database:
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

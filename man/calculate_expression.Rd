@@ -36,12 +36,12 @@ given "cluster_col" and given "features".
 Counts average expression of gene set (Use in package)
 }
 \seealso{
-Other Section_1_Functions_Use_in_Package: 
-\code{\link{calculate_cluster_variability}()},
-\code{\link{calculate_expression_skewness}()},
-\code{\link{calculate_probability}()},
-\code{\link{compute_adaptive_parameters}()},
-\code{\link{estimate_batch_effect}()},
-\code{\link{extract_dataset_features}()}
+Other Section_1_Functions_Use_in_Package:
+\code{\link[=calculate_cluster_variability]{calculate_cluster_variability()}},
+\code{\link[=calculate_expression_skewness]{calculate_expression_skewness()}},
+\code{\link[=calculate_probability]{calculate_probability()}},
+\code{\link[=compute_adaptive_parameters]{compute_adaptive_parameters()}},
+\code{\link[=estimate_batch_effect]{estimate_batch_effect()}},
+\code{\link[=extract_dataset_features]{extract_dataset_features()}}
 }
 \concept{Section_1_Functions_Use_in_Package}
