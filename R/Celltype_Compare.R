@@ -18,6 +18,9 @@
 #'   Default: "grey70".
 #' @param color_high Character. Color for high proportion values in the heatmap.
 #'   Default: "navy".
+#' @param show_plot Logical. If `TRUE` (default), the heatmap is automatically
+#'   displayed when the function is called. Set to `FALSE` to suppress
+#'   automatic plotting (e.g., in non‑interactive environments).
 #'
 #' @return A list with five components:
 #'   \item{count_table}{A data frame (wide format) with rows = unique
@@ -88,7 +91,8 @@ Celltype_Compare <- function(
     group_col = NULL,
     barcode_col = NULL,
     color_low = "grey70",
-    color_high = "navy"
+    color_high = "navy",
+    show_plot = TRUE
 ) {
   # Align by shared cell barcodes, with automatic normalization
   if (is.null(barcode_col)) {
@@ -228,7 +232,8 @@ Celltype_Compare <- function(
     ggplot2::labs(
       x = group_col,
       y = label_col,
-      fill = "Proportion"
+      fill = "Proportion",
+      title = "Celltype mapping heatmap | SlimR"
     ) +
     ggplot2::coord_fixed() +
     ggplot2::theme_minimal() +
@@ -238,6 +243,10 @@ Celltype_Compare <- function(
       panel.background = ggplot2::element_blank(),
       panel.border = ggplot2::element_rect(color = "black", fill = NA, linewidth = 0.4)
     )
+
+  if (show_plot) {
+    print(comparison_plot)
+  }
 
   list(
     count_table = count_table,

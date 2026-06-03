@@ -11,7 +11,8 @@ Celltype_Compare(
   group_col = NULL,
   barcode_col = NULL,
   color_low = "grey70",
-  color_high = "navy"
+  color_high = "navy",
+  show_plot = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,10 @@ Default: "grey70".}
 
 \item{color_high}{Character. Color for high proportion values in the heatmap.
 Default: "navy".}
+
+\item{show_plot}{Logical. If \code{TRUE} (default), the heatmap is automatically
+displayed when the function is called. Set to \code{FALSE} to suppress
+automatic plotting (e.g., in non‑interactive environments).}
 }
 \value{
 A list with five components:
