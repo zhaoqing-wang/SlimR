@@ -11,7 +11,7 @@ License: MIT + file LICENSE
 URL: https://github.com/zhaoqing-wang/SlimR
 BugReports: https://github.com/zhaoqing-wang/SlimR/issues
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1.0)
 Imports: 
     cowplot,
     dplyr,
