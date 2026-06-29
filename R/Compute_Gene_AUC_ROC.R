@@ -58,7 +58,7 @@
 #'   group_label = "T cells",
 #'   assay       = "RNA",
 #'   plot        = TRUE,
-#'   plot_title  = "CD3D – T cells vs. Others | SlimR"
+#'   plot_title  = "CD3D | T cells vs. Others | SlimR"
 #' )
 #' print(res$AUC)
 #' print(res$roc_plot)

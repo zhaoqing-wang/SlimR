@@ -535,7 +535,6 @@ result <- Compute_Gene_AUC_ROC(
   group_label = "T cells",
   assay       = "RNA",
   plot        = TRUE,
-  plot_title  = "CD3D – T cells vs. Others | SlimR",
   line_color  = "navy",
   line_size   = 1
 )
