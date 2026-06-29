@@ -531,7 +531,7 @@ Evaluate how well a single gene discriminates a user-defined cell group from the
 result <- Compute_Gene_AUC_ROC(
   seurat_obj  = sce,
   gene        = "CD3D",
-  group_col   = "seurat_clusters",
+  group_col   = "Cell Types",
   group_label = "T cells",
   assay       = "RNA",
   plot        = TRUE,

@@ -54,7 +54,7 @@
 #' res <- Compute_Gene_AUC_ROC(
 #'   seurat_obj  = sce,
 #'   gene        = "CD3D",
-#'   group_col   = "seurat_clusters",
+#'   group_col   = "Cell Types",
 #'   group_label = "T cells",
 #'   assay       = "RNA",
 #'   plot        = TRUE,
@@ -70,7 +70,7 @@ Compute_Gene_AUC_ROC <- function(
     group_label,
     assay = "RNA",
     plot = TRUE,
-    plot_title = "ROC Curve",
+    plot_title = "ROC Curve | SlimR",
     line_color = "navy",
     line_size = 1
 ) {
