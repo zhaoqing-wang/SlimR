@@ -3,8 +3,11 @@
 #' @description
 #' Evaluates the discriminatory power of a single gene in separating a
 #' user-defined positive cell group from the rest, using the Area Under the
-#' Receiver Operating Characteristic curve (AUC). Optionally generates a
-#' publication-ready ROC plot via **ggplot2**.
+#' Receiver Operating Characteristic curve (AUC). Two scoring methods are
+#' available: \code{"raw"} (raw expression, optionally truncated by
+#' \code{min_expression}) and \code{"rank"} (expression ranks, robust to
+#' dropout and outlier values). Optionally generates a publication-ready ROC
+#' plot via **ggplot2**.
 #'
 #' @param seurat_obj A Seurat object containing single-cell expression data.
 #' @param gene A single character string specifying the gene to evaluate. Must
@@ -15,26 +18,22 @@
 #'   (e.g., `1` for cluster 1). All other cells are treated as negatives.
 #' @param assay Character string specifying which assay to use. Default is
 #'   `"RNA"`.
+#' @param method Scoring method: \code{"raw"} uses (possibly truncated)
+#'   expression values; \code{"rank"} uses expression ranks, which is robust
+#'   to dropout and does not require a \code{min_expression} threshold.
+#' @param min_expression Numeric threshold for expression truncation (only
+#'   used when \code{method = "raw"}). Values below this threshold are set to
+#'   zero. Default is \code{NULL} (no truncation).
 #' @param plot Logical indicating whether to create and return a ggplot2 ROC
-#'   curve. Default is `TRUE`.
+#'   curve. Default is \code{TRUE}.
 #' @param plot_title Character string used as the title of the ROC plot.
-#'   Default is `"ROC Curve"`.
-#' @param line_color Colour of the ROC curve. Default is `"firebrick"`.
+#'   Default is \code{"ROC Curve"}.
+#' @param line_color Colour of the ROC curve. Default is \code{"firebrick"}.
 #' @param line_size Numeric value for the thickness of the ROC curve line.
-#'   Default is `1`.
+#'   Default is \code{1}.
 #'
-#' @return A list with the following elements:
-#' \describe{
-#'   \item{AUC}{Numeric value (between 0 and 1) of the area under the ROC curve.}
-#'   \item{roc_data}{A data.frame with columns `fpr` (False Positive Rate) and
-#'     `tpr` (True Positive Rate) that can be used for custom plotting.}
-#'   \item{predictions}{Numeric vector of the gene’s expression values used as
-#'     prediction scores.}
-#'   \item{labels}{Logical vector indicating whether each cell belongs to the
-#'     positive class (`TRUE`) or not (`FALSE`).}
-#'   \item{roc_plot}{If `plot = TRUE`, a **ggplot** object displaying the ROC
-#'     curve; otherwise `NULL`.}
-#' }
+#' @return A list with elements: \code{AUC}, \code{roc_data}, \code{predictions},
+#'   \code{labels}, and \code{roc_plot} (if \code{plot = TRUE}).
 #'
 #' @export
 #'
@@ -50,18 +49,20 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Compute AUC and plot ROC for gene CD3D in cluster 1
-#' res <- Compute_Gene_AUC_ROC(
-#'   seurat_obj  = sce,
-#'   gene        = "CD3D",
-#'   group_col   = "Cell Types",
-#'   group_label = "T cells",
-#'   assay       = "RNA",
-#'   plot        = TRUE,
-#'   plot_title  = "CD3D | T cells vs. Others | SlimR"
+#' # Raw expression with truncation
+#' res_raw <- Compute_Gene_AUC_ROC(
+#'   seurat_obj = sce, gene = "CD3D",
+#'   group_col = "seurat_clusters", group_label = 1,
+#'   method = "raw", min_expression = 0.5
 #' )
-#' print(res$AUC)
-#' print(res$roc_plot)
+#' 
+#' # Rank-based (robust to dropout, no threshold needed)
+#' res_rank <- Compute_Gene_AUC_ROC(
+#'   seurat_obj = sce, gene = "CD3D",
+#'   group_col = "seurat_clusters", group_label = 1,
+#'   method = "rank"
+#' )
+#' print(res_rank$AUC)
 #' }
 Compute_Gene_AUC_ROC <- function(
     seurat_obj,
@@ -69,9 +70,11 @@ Compute_Gene_AUC_ROC <- function(
     group_col,
     group_label,
     assay = "RNA",
+    method = c("raw", "rank"),
+    min_expression = NULL,
     plot = TRUE,
-    plot_title = "ROC Curve | SlimR",
-    line_color = "navy",
+    plot_title = "ROC Curve",
+    line_color = "firebrick",
     line_size = 1
 ) {
   if (!inherits(seurat_obj, "Seurat")) {
@@ -86,6 +89,10 @@ Compute_Gene_AUC_ROC <- function(
   if (!gene %in% rownames(seurat_obj[[assay]])) {
     stop("Gene '", gene, "' not found in the '", assay, "' assay.")
   }
+  method <- match.arg(method)
+  if (!is.null(min_expression) && (!is.numeric(min_expression) || min_expression < 0)) {
+    stop("'min_expression' must be NULL or a non-negative numeric value.")
+  }
   if (!is.logical(plot) || length(plot) != 1L) {
     stop("'plot' must be a single logical value.")
   }
@@ -93,6 +100,21 @@ Compute_Gene_AUC_ROC <- function(
   Seurat::DefaultAssay(seurat_obj) <- assay
   expr_data <- Seurat::FetchData(seurat_obj, vars = gene)
   expr_vec <- expr_data[[gene]]
+
+  if (method == "raw") {
+    if (!is.null(min_expression)) {
+      expr_vec[expr_vec < min_expression] <- 0
+    }
+    scores <- expr_vec
+    method_label <- if (!is.null(min_expression)) {
+      paste0("raw (min_expression = ", min_expression, ")")
+    } else {
+      "raw"
+    }
+  } else {
+    scores <- rank(expr_vec, ties.method = "average") / length(expr_vec)
+    method_label <- "rank"
+  }
 
   meta_col <- seurat_obj@meta.data[[group_col]]
   labels <- meta_col == group_label
@@ -102,22 +124,25 @@ Compute_Gene_AUC_ROC <- function(
          "AUC cannot be computed.")
   }
 
-  if (stats::sd(expr_vec, na.rm = TRUE) < .Machine$double.eps) {
-    warning("Gene '", gene, "' has near-zero variance. AUC may be unreliable.")
+  # Check variance
+  if (stats::sd(scores, na.rm = TRUE) < .Machine$double.eps) {
+    warning("Scores for gene '", gene, "' have near-zero variance. AUC may be unreliable.")
   }
 
-  auc_val <- .fastAUC(expr_vec, labels)
-  roc_df <- .compute_roc_data(expr_vec, labels)
+  auc_val <- .fastAUC(scores, labels)
+  roc_df <- .compute_roc_data(scores, labels)
 
   out <- list(
     AUC         = auc_val,
     roc_data    = roc_df,
-    predictions = expr_vec,
+    predictions = scores,
     labels      = labels,
     roc_plot    = NULL
   )
 
   if (plot) {
+    subtitle_text <- paste0("AUC = ", round(auc_val, 4),
+                            "  |  method: ", method_label)
     out$roc_plot <- ggplot2::ggplot(
       roc_df,
       ggplot2::aes(x = .data$fpr, y = .data$tpr)
@@ -139,7 +164,7 @@ Compute_Gene_AUC_ROC <- function(
       ) +
       ggplot2::labs(
         title    = plot_title,
-        subtitle = paste("AUC =", round(auc_val, 4)),
+        subtitle = subtitle_text,
         x        = "False Positive Rate (1 - Specificity)",
         y        = "True Positive Rate (Sensitivity)"
       ) +
@@ -159,13 +184,6 @@ Compute_Gene_AUC_ROC <- function(
   return(out)
 }
 
-
-## Internal helper functions (not exported)
-
-# Fast AUC calculation using trapezoidal integration
-# @param predictions numeric vector of expression values
-# @param labels logical vector (TRUE = positive)
-# @return numeric AUC value
 .fastAUC <- function(predictions, labels) {
   ord <- order(predictions, decreasing = TRUE)
   labels <- labels[ord]
@@ -181,10 +199,6 @@ Compute_Gene_AUC_ROC <- function(
   return(auc)
 }
 
-# Build ROC curve data frame
-# @param predictions numeric vector
-# @param labels logical vector
-# @return data.frame with fpr and tpr
 .compute_roc_data <- function(predictions, labels) {
   ord <- order(predictions, decreasing = TRUE)
   labels <- labels[ord]

@@ -534,6 +534,7 @@ result <- Compute_Gene_AUC_ROC(
   group_col   = "Cell Types",
   group_label = "T cells",
   assay       = "RNA",
+  method      = "rank",
   plot        = TRUE,
   line_color  = "navy",
   line_size   = 1
