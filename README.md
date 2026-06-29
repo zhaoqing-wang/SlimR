@@ -27,6 +27,7 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
 4. [Semi-Automated Annotation Workflow](#4-semi-automated-annotation-workflow)
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
+    - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -520,6 +521,29 @@ result <- Celltype_Compare(
 head(result$prop_table)   # column-wise proportions
 print(result$plot)         # heatmap of proportions
 result$main_to_sub         # dominant cell type per group
+```
+
+### 5.2 Single-Gene AUC and ROC Analysis
+
+Evaluate how well a single gene discriminates a user-defined cell group from the rest using the Area Under the ROC Curve (AUC). The function returns the AUC value, the ROC data for custom plotting, and optionally a publication-ready ggplot2 ROC curve.
+
+```r
+result <- Compute_Gene_AUC_ROC(
+  seurat_obj  = sce,
+  gene        = "CD3D",
+  group_col   = "seurat_clusters",
+  group_label = "T cells",
+  assay       = "RNA",
+  plot        = TRUE,
+  plot_title  = "CD3D – T cells vs. Others | SlimR",
+  line_color  = "navy",
+  line_size   = 1
+)
+
+# Inspect results
+result$AUC                 # numeric AUC value
+head(result$roc_data)      # data.frame with fpr and tpr
+result$roc_plot            # ggplot object (when plot = TRUE)
 ```
 
 ## 6. Citation

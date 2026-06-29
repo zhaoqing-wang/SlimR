@@ -112,6 +112,7 @@ Other Section_5_Other_Functions_Provided:
 \code{\link[=Celltype_annotation_Cellmarker2]{Celltype_annotation_Cellmarker2()}},
 \code{\link[=Celltype_annotation_Excel]{Celltype_annotation_Excel()}},
 \code{\link[=Celltype_annotation_PanglaoDB]{Celltype_annotation_PanglaoDB()}},
-\code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}}
+\code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}},
+\code{\link[=Compute_Gene_AUC_ROC]{Compute_Gene_AUC_ROC()}}
 }
 \concept{Section_5_Other_Functions_Provided}
