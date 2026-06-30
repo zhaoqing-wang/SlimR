@@ -87,7 +87,7 @@ Compute_Gene_AUC_ROC <- function(
     min_expression = NULL,
     keep_expression_above = NULL,
     plot = TRUE,
-    plot_title = "ROC Curve | SlimR",
+    plot_title = "Gene ROC Curve | SlimR",
     line_color = "navy",
     line_size = 1
 ) {
