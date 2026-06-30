@@ -3,11 +3,9 @@
 #' @description
 #' Evaluates the discriminatory power of a single gene in separating a
 #' user-defined positive cell group from the rest, using the Area Under the
-#' Receiver Operating Characteristic curve (AUC). Two scoring methods are
-#' available: \code{"raw"} (raw expression, optionally truncated by
-#' \code{min_expression}) and \code{"rank"} (expression ranks, robust to
-#' dropout and outlier values). Optionally generates a publication-ready ROC
-#' plot via **ggplot2**.
+#' Receiver Operating Characteristic curve (AUC). Several scoring strategies
+#' and optional cell subsetting are provided to handle dropout noise and
+#' sparse expression typical of single-cell data.
 #'
 #' @param seurat_obj A Seurat object containing single-cell expression data.
 #' @param gene A single character string specifying the gene to evaluate. Must
@@ -18,12 +16,19 @@
 #'   (e.g., `1` for cluster 1). All other cells are treated as negatives.
 #' @param assay Character string specifying which assay to use. Default is
 #'   `"RNA"`.
-#' @param method Scoring method: \code{"raw"} uses (possibly truncated)
-#'   expression values; \code{"rank"} uses expression ranks, which is robust
-#'   to dropout and does not require a \code{min_expression} threshold.
+#' @param method Scoring method: \code{"raw"} (raw expression, optionally
+#'   truncated by \code{min_expression}) or \code{"rank"} (expression ranks,
+#'   which is robust to dropout and does not require \code{min_expression}).
 #' @param min_expression Numeric threshold for expression truncation (only
 #'   used when \code{method = "raw"}). Values below this threshold are set to
 #'   zero. Default is \code{NULL} (no truncation).
+#' @param keep_expression_above Optional numeric threshold. If set, only cells
+#'   with expression greater than this value are retained for AUC computation.
+#'   **Note:** this changes the population over which AUC is evaluated, shifting
+#'   the interpretation from "overall discrimination among all cells" to
+#'   "discrimination among cells that express the gene above this level". Use
+#'   with caution and always compare with the result without subsetting.
+#'   Default is \code{NULL} (all cells retained).
 #' @param plot Logical indicating whether to create and return a ggplot2 ROC
 #'   curve. Default is \code{TRUE}.
 #' @param plot_title Character string used as the title of the ROC plot.
@@ -32,8 +37,18 @@
 #' @param line_size Numeric value for the thickness of the ROC curve line.
 #'   Default is \code{1}.
 #'
-#' @return A list with elements: \code{AUC}, \code{roc_data}, \code{predictions},
-#'   \code{labels}, and \code{roc_plot} (if \code{plot = TRUE}).
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{AUC}{Numeric value (between 0 and 1) of the area under the ROC curve.}
+#'   \item{roc_data}{A data.frame with columns \code{fpr} (False Positive Rate)
+#'     and \code{tpr} (True Positive Rate) that can be used for custom plotting.}
+#'   \item{predictions}{Numeric vector of the (possibly truncated) expression
+#'     values used as prediction scores.}
+#'   \item{labels}{Logical vector indicating whether each cell belongs to the
+#'     positive class (\code{TRUE}) or not (\code{FALSE}).}
+#'   \item{roc_plot}{If \code{plot = TRUE}, a **ggplot** object displaying the
+#'     ROC curve; otherwise \code{NULL}.}
+#' }
 #'
 #' @export
 #'
@@ -49,20 +64,16 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Raw expression with truncation
-#' res_raw <- Compute_Gene_AUC_ROC(
-#'   seurat_obj = sce, gene = "CD3D",
-#'   group_col = "seurat_clusters", group_label = 1,
-#'   method = "raw", min_expression = 0.5
-#' )
-#' 
-#' # Rank-based (robust to dropout, no threshold needed)
-#' res_rank <- Compute_Gene_AUC_ROC(
-#'   seurat_obj = sce, gene = "CD3D",
-#'   group_col = "seurat_clusters", group_label = 1,
-#'   method = "rank"
-#' )
-#' print(res_rank$AUC)
+#' # Default: raw expression with no truncation
+#' res <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12)
+#'
+#' # Rank-based (robust to dropout)
+#' res_rank <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12,
+#'                                  method = "rank")
+#'
+#' # Keep only cells expressing above 0.5 (exploratory)
+#' res_sub <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12,
+#'                                 keep_expression_above = 0.5)
 #' }
 Compute_Gene_AUC_ROC <- function(
     seurat_obj,
@@ -72,6 +83,7 @@ Compute_Gene_AUC_ROC <- function(
     assay = "RNA",
     method = c("raw", "rank"),
     min_expression = NULL,
+    keep_expression_above = NULL,
     plot = TRUE,
     plot_title = "ROC Curve",
     line_color = "firebrick",
@@ -93,6 +105,10 @@ Compute_Gene_AUC_ROC <- function(
   if (!is.null(min_expression) && (!is.numeric(min_expression) || min_expression < 0)) {
     stop("'min_expression' must be NULL or a non-negative numeric value.")
   }
+  if (!is.null(keep_expression_above) &&
+      (!is.numeric(keep_expression_above) || keep_expression_above < 0)) {
+    stop("'keep_expression_above' must be NULL or a non-negative numeric value.")
+  }
   if (!is.logical(plot) || length(plot) != 1L) {
     stop("'plot' must be a single logical value.")
   }
@@ -100,6 +116,28 @@ Compute_Gene_AUC_ROC <- function(
   Seurat::DefaultAssay(seurat_obj) <- assay
   expr_data <- Seurat::FetchData(seurat_obj, vars = gene)
   expr_vec <- expr_data[[gene]]
+
+  meta_col <- seurat_obj@meta.data[[group_col]]
+  labels <- meta_col == group_label
+
+  if (length(unique(labels)) < 2L) {
+    stop("After binarization by 'group_label', only one class is present. ",
+         "AUC cannot be computed.")
+  }
+
+  if (!is.null(keep_expression_above)) {
+    keep_idx <- expr_vec > keep_expression_above
+    if (sum(keep_idx) == 0) {
+      stop("No cells with expression above 'keep_expression_above' = ",
+           keep_expression_above, ". Cannot compute AUC.")
+    }
+    expr_vec <- expr_vec[keep_idx]
+    labels <- labels[keep_idx]
+    if (length(unique(labels)) < 2L) {
+      stop("After subsetting by 'keep_expression_above', only one class remains. ",
+           "Cannot compute AUC.")
+    }
+  }
 
   if (method == "raw") {
     if (!is.null(min_expression)) {
@@ -116,15 +154,12 @@ Compute_Gene_AUC_ROC <- function(
     method_label <- "rank"
   }
 
-  meta_col <- seurat_obj@meta.data[[group_col]]
-  labels <- meta_col == group_label
-
-  if (length(unique(labels)) < 2L) {
-    stop("After binarization by 'group_label', only one class is present. ",
-         "AUC cannot be computed.")
+  if (!is.null(keep_expression_above)) {
+    method_label <- paste0(method_label,
+                           " | subset: expr > ", keep_expression_above,
+                           " (n = ", length(scores), ")")
   }
 
-  # Check variance
   if (stats::sd(scores, na.rm = TRUE) < .Machine$double.eps) {
     warning("Scores for gene '", gene, "' have near-zero variance. AUC may be unreliable.")
   }

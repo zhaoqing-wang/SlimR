@@ -12,6 +12,7 @@ Compute_Gene_AUC_ROC(
   assay = "RNA",
   method = c("raw", "rank"),
   min_expression = NULL,
+  keep_expression_above = NULL,
   plot = TRUE,
   plot_title = "ROC Curve",
   line_color = "firebrick",
@@ -33,13 +34,21 @@ be present in the rownames of the chosen assay.}
 \item{assay}{Character string specifying which assay to use. Default is
 \code{"RNA"}.}
 
-\item{method}{Scoring method: \code{"raw"} uses (possibly truncated)
-expression values; \code{"rank"} uses expression ranks, which is robust
-to dropout and does not require a \code{min_expression} threshold.}
+\item{method}{Scoring method: \code{"raw"} (raw expression, optionally
+truncated by \code{min_expression}) or \code{"rank"} (expression ranks,
+which is robust to dropout and does not require \code{min_expression}).}
 
 \item{min_expression}{Numeric threshold for expression truncation (only
 used when \code{method = "raw"}). Values below this threshold are set to
 zero. Default is \code{NULL} (no truncation).}
+
+\item{keep_expression_above}{Optional numeric threshold. If set, only cells
+with expression greater than this value are retained for AUC computation.
+\strong{Note:} this changes the population over which AUC is evaluated, shifting
+the interpretation from "overall discrimination among all cells" to
+"discrimination among cells that express the gene above this level". Use
+with caution and always compare with the result without subsetting.
+Default is \code{NULL} (all cells retained).}
 
 \item{plot}{Logical indicating whether to create and return a ggplot2 ROC
 curve. Default is \code{TRUE}.}
@@ -53,34 +62,38 @@ Default is \code{"ROC Curve"}.}
 Default is \code{1}.}
 }
 \value{
-A list with elements: \code{AUC}, \code{roc_data}, \code{predictions},
-\code{labels}, and \code{roc_plot} (if \code{plot = TRUE}).
+A list with the following elements:
+\describe{
+\item{AUC}{Numeric value (between 0 and 1) of the area under the ROC curve.}
+\item{roc_data}{A data.frame with columns \code{fpr} (False Positive Rate)
+and \code{tpr} (True Positive Rate) that can be used for custom plotting.}
+\item{predictions}{Numeric vector of the (possibly truncated) expression
+values used as prediction scores.}
+\item{labels}{Logical vector indicating whether each cell belongs to the
+positive class (\code{TRUE}) or not (\code{FALSE}).}
+\item{roc_plot}{If \code{plot = TRUE}, a \strong{ggplot} object displaying the
+ROC curve; otherwise \code{NULL}.}
+}
 }
 \description{
 Evaluates the discriminatory power of a single gene in separating a
 user-defined positive cell group from the rest, using the Area Under the
-Receiver Operating Characteristic curve (AUC). Two scoring methods are
-available: \code{"raw"} (raw expression, optionally truncated by
-\code{min_expression}) and \code{"rank"} (expression ranks, robust to
-dropout and outlier values). Optionally generates a publication-ready ROC
-plot via \strong{ggplot2}.
+Receiver Operating Characteristic curve (AUC). Several scoring strategies
+and optional cell subsetting are provided to handle dropout noise and
+sparse expression typical of single-cell data.
 }
 \examples{
 \dontrun{
-# Raw expression with truncation
-res_raw <- Compute_Gene_AUC_ROC(
-  seurat_obj = sce, gene = "CD3D",
-  group_col = "seurat_clusters", group_label = 1,
-  method = "raw", min_expression = 0.5
-)
+# Default: raw expression with no truncation
+res <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12)
 
-# Rank-based (robust to dropout, no threshold needed)
-res_rank <- Compute_Gene_AUC_ROC(
-  seurat_obj = sce, gene = "CD3D",
-  group_col = "seurat_clusters", group_label = 1,
-  method = "rank"
-)
-print(res_rank$AUC)
+# Rank-based (robust to dropout)
+res_rank <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12,
+                                 method = "rank")
+
+# Keep only cells expressing above 0.5 (exploratory)
+res_sub <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12,
+                                keep_expression_above = 0.5)
 }
 }
 \seealso{

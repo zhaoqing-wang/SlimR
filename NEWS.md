@@ -1,11 +1,11 @@
-## Version 1.1.6 (2026-06-29)
+## Version 1.1.6 (2026-06-30)
 
 *   **New Features**
-    *   Added `Compute_Gene_AUC_ROC()`: a single‑gene evaluation function that computes the Area Under the ROC Curve (AUC) and optionally produces a ggplot2‑based ROC plot. Users specify a gene, a metadata grouping column, and a positive class label; the function returns the AUC value, the raw ROC data, and (if requested) a publication‑ready curve. This facilitates rapid assessment of marker specificity at the individual gene level.
+    *   `Compute_Gene_AUC_ROC()` computes single‑gene AUC and optionally plots the ROC curve, supporting raw and rank‑based scoring, expression truncation, and cell subsetting for robust marker evaluation.
 
 *   **Improvements**
-    *   Updated `README.md` with a new section **5.2 Single‑Gene AUC and ROC Analysis** demonstrating usage of `Compute_Gene_AUC_ROC()`.
-    *   Fixed several minor bugs and improved overall package stability.
+    *   Updated `README.md` with Section 5.2 demonstrating the new function.
+    *   Various minor bug fixes.
 
 ## Version 1.1.5 (2026-06-03)
 
