@@ -6,6 +6,8 @@
 #' Receiver Operating Characteristic curve (AUC). Several scoring strategies
 #' and optional cell subsetting are provided to handle dropout noise and
 #' sparse expression typical of single-cell data.
+#' If \code{plot = TRUE} (the default), a publication‑ready ROC curve is
+#' automatically displayed via \pkg{ggplot2}.
 #'
 #' @param seurat_obj A Seurat object containing single-cell expression data.
 #' @param gene A single character string specifying the gene to evaluate. Must
@@ -29,15 +31,15 @@
 #'   "discrimination among cells that express the gene above this level". Use
 #'   with caution and always compare with the result without subsetting.
 #'   Default is \code{NULL} (all cells retained).
-#' @param plot Logical indicating whether to create and return a ggplot2 ROC
-#'   curve. Default is \code{TRUE}.
+#' @param plot Logical indicating whether to create and automatically display
+#'   a ggplot2 ROC curve. Default is \code{TRUE}.
 #' @param plot_title Character string used as the title of the ROC plot.
-#'   Default is \code{"ROC Curve"}.
-#' @param line_color Colour of the ROC curve. Default is \code{"firebrick"}.
+#'   Default is \code{"ROC Curve | SlimR"}.
+#' @param line_color Colour of the ROC curve. Default is \code{"navy"}.
 #' @param line_size Numeric value for the thickness of the ROC curve line.
 #'   Default is \code{1}.
 #'
-#' @return A list with the following elements:
+#' @return Invisibly, a list with the following elements:
 #' \describe{
 #'   \item{AUC}{Numeric value (between 0 and 1) of the area under the ROC curve.}
 #'   \item{roc_data}{A data.frame with columns \code{fpr} (False Positive Rate)
@@ -58,13 +60,13 @@
 #' @importFrom stats sd
 #' @importFrom ggplot2 ggplot aes geom_line geom_abline labs theme_minimal
 #' @importFrom ggplot2 scale_x_continuous scale_y_continuous expansion
-#' @importFrom ggplot2 element_line element_text theme
+#' @importFrom ggplot2 element_line element_text element_rect theme
 #' @importFrom scales number_format
 #' @importFrom utils head tail
 #'
 #' @examples
 #' \dontrun{
-#' # Default: raw expression with no truncation
+#' # Default: raw expression, plot displayed automatically
 #' res <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12)
 #'
 #' # Rank-based (robust to dropout)
@@ -85,8 +87,8 @@ Compute_Gene_AUC_ROC <- function(
     min_expression = NULL,
     keep_expression_above = NULL,
     plot = TRUE,
-    plot_title = "ROC Curve",
-    line_color = "firebrick",
+    plot_title = "ROC Curve | SlimR",
+    line_color = "navy",
     line_size = 1
 ) {
   if (!inherits(seurat_obj, "Seurat")) {
@@ -205,18 +207,19 @@ Compute_Gene_AUC_ROC <- function(
       ) +
       ggplot2::theme_minimal() +
       ggplot2::theme(
-        plot.title       = ggplot2::element_text(size = 14, face = "bold",
-                                                 hjust = 0.5),
+        plot.title       = ggplot2::element_text(size = 14, face = "bold", hjust = 0.5),
         plot.subtitle    = ggplot2::element_text(size = 11, hjust = 0.5),
         axis.title       = ggplot2::element_text(size = 11),
         axis.text        = ggplot2::element_text(size = 9),
         panel.grid.major = ggplot2::element_line(color = "grey90"),
         panel.grid.minor = ggplot2::element_blank(),
-        axis.line        = ggplot2::element_line(color = "black")
+        panel.border     = ggplot2::element_rect(color = "black", fill = NA, linewidth = 0.5)
       )
+    
+    print(out$roc_plot)
   }
 
-  return(out)
+  invisible(out)
 }
 
 .fastAUC <- function(predictions, labels) {

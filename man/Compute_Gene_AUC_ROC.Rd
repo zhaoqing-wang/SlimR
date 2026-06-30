@@ -14,8 +14,8 @@ Compute_Gene_AUC_ROC(
   min_expression = NULL,
   keep_expression_above = NULL,
   plot = TRUE,
-  plot_title = "ROC Curve",
-  line_color = "firebrick",
+  plot_title = "ROC Curve | SlimR",
+  line_color = "navy",
   line_size = 1
 )
 }
@@ -50,19 +50,19 @@ the interpretation from "overall discrimination among all cells" to
 with caution and always compare with the result without subsetting.
 Default is \code{NULL} (all cells retained).}
 
-\item{plot}{Logical indicating whether to create and return a ggplot2 ROC
-curve. Default is \code{TRUE}.}
+\item{plot}{Logical indicating whether to create and automatically display
+a ggplot2 ROC curve. Default is \code{TRUE}.}
 
 \item{plot_title}{Character string used as the title of the ROC plot.
-Default is \code{"ROC Curve"}.}
+Default is \code{"ROC Curve | SlimR"}.}
 
-\item{line_color}{Colour of the ROC curve. Default is \code{"firebrick"}.}
+\item{line_color}{Colour of the ROC curve. Default is \code{"navy"}.}
 
 \item{line_size}{Numeric value for the thickness of the ROC curve line.
 Default is \code{1}.}
 }
 \value{
-A list with the following elements:
+Invisibly, a list with the following elements:
 \describe{
 \item{AUC}{Numeric value (between 0 and 1) of the area under the ROC curve.}
 \item{roc_data}{A data.frame with columns \code{fpr} (False Positive Rate)
@@ -81,10 +81,12 @@ user-defined positive cell group from the rest, using the Area Under the
 Receiver Operating Characteristic curve (AUC). Several scoring strategies
 and optional cell subsetting are provided to handle dropout noise and
 sparse expression typical of single-cell data.
+If \code{plot = TRUE} (the default), a publication‑ready ROC curve is
+automatically displayed via \pkg{ggplot2}.
 }
 \examples{
 \dontrun{
-# Default: raw expression with no truncation
+# Default: raw expression, plot displayed automatically
 res <- Compute_Gene_AUC_ROC(sce, "BMX", "seurat_clusters", 12)
 
 # Rank-based (robust to dropout)
