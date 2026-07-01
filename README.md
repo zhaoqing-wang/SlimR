@@ -294,7 +294,7 @@ SlimR_anno_result <- Celltype_Calculate(seurat_obj = sce,
     threshold = 0.6,
     compute_AUC = TRUE,
     plot_AUC = TRUE,
-    AUC_correction = FALSE,
+    AUC_correction = TRUE,
     colour_low = "navy",
     colour_high = "firebrick3"
     )
