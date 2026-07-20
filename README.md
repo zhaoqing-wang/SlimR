@@ -570,7 +570,9 @@ res <- Plot_Hierarchy_Proportion(
   Cell_types        = "Cell_type",
   Sub_cell_types    = "Sub_type",
   proportion        = TRUE,
-  Groups            = "orig.ident"
+  Groups            = "orig.ident",
+  low_col           = "white",
+  high_col          = "navy"
 )
 
 # Access individual plot components

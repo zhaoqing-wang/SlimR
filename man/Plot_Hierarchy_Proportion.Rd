@@ -16,7 +16,7 @@ Plot_Hierarchy_Proportion(
   Groups = NULL,
   show_labels = TRUE,
   low_col = "white",
-  high_col = "red"
+  high_col = "navy"
 )
 }
 \arguments{

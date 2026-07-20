@@ -103,9 +103,8 @@ Plot_Hierarchy_Proportion <- function(
     Groups = NULL,
     show_labels = TRUE,
     low_col = "white",
-    high_col = "red"
+    high_col = "navy"
 ) {
-  # --- argument checks -------------------------------------------------------
   if (!inherits(seurat_obj, "Seurat")) {
     stop("'seurat_obj' must be a Seurat object.")
   }
@@ -141,7 +140,6 @@ Plot_Hierarchy_Proportion <- function(
     }
   }
 
-  # --- extract and clean meta data -------------------------------------------
   meta <- seurat_obj@meta.data
   main_vec <- as.character(meta[[Main_cell_types]])
   if (has_Cell) {
@@ -155,7 +153,6 @@ Plot_Hierarchy_Proportion <- function(
 
   valid_char <- function(x) !is.na(x) & x != ""
 
-  # --- determine terminal (leaf) labels and leaf ID for each cell ------------
   leaf_id <- rep(NA_character_, nrow(meta))
   if (has_Sub) {
     idx_sub <- valid_char(sub_vec)
@@ -173,10 +170,9 @@ Plot_Hierarchy_Proportion <- function(
     leaf_id[] <- paste0("Main:", main_vec)
   }
 
-  # --- build node table ------------------------------------------------------
   main_cats <- unique(main_vec[valid_char(main_vec)])
-  if (has_Cell) cell_cats <- unique(cell_vec[valid_char(cell_vec)]) else cell_cats <- character(0)
-  if (has_Sub)  sub_cats  <- unique(sub_vec[valid_char(sub_vec)])  else sub_cats  <- character(0)
+  cell_cats <- if (has_Cell) unique(cell_vec[valid_char(cell_vec)]) else character(0)
+  sub_cats  <- if (has_Sub)  unique(sub_vec[valid_char(sub_vec)])   else character(0)
 
   if (anyDuplicated(main_cats)) stop("Main cell type labels must be unique.")
   if (has_Cell && anyDuplicated(cell_cats)) stop("Cell type labels must be unique within this level.")
@@ -186,17 +182,13 @@ Plot_Hierarchy_Proportion <- function(
   if (has_Cell) {
     sel <- valid_char(cell_vec)
     edges[["Main_Cell"]] <- unique(data.frame(
-      from = main_vec[sel],
-      to   = cell_vec[sel],
-      stringsAsFactors = FALSE
+      from = main_vec[sel], to = cell_vec[sel], stringsAsFactors = FALSE
     ))
   }
   if (has_Sub) {
     sel <- valid_char(sub_vec)
     edges[["Cell_Sub"]] <- unique(data.frame(
-      from = cell_vec[sel],
-      to   = sub_vec[sel],
-      stringsAsFactors = FALSE
+      from = cell_vec[sel], to = sub_vec[sel], stringsAsFactors = FALSE
     ))
   }
 
@@ -208,12 +200,9 @@ Plot_Hierarchy_Proportion <- function(
       paste0("Cell:", child_labs)
     } else character(0)
     node_list[[node_id]] <- list(
-      id       = node_id,
-      label    = cat,
-      layer    = "Main",
-      is_leaf  = length(children) == 0,
-      children = children,
-      n        = sum(main_vec == cat, na.rm = TRUE)
+      id = node_id, label = cat, layer = "Main",
+      is_leaf = length(children) == 0, children = children,
+      n = sum(main_vec == cat, na.rm = TRUE)
     )
   }
   if (has_Cell) {
@@ -224,12 +213,9 @@ Plot_Hierarchy_Proportion <- function(
         paste0("Sub:", child_labs)
       } else character(0)
       node_list[[node_id]] <- list(
-        id       = node_id,
-        label    = cat,
-        layer    = "Cell",
-        is_leaf  = length(children) == 0,
-        children = children,
-        n        = sum(cell_vec == cat, na.rm = TRUE)
+        id = node_id, label = cat, layer = "Cell",
+        is_leaf = length(children) == 0, children = children,
+        n = sum(cell_vec == cat, na.rm = TRUE)
       )
     }
   }
@@ -237,17 +223,13 @@ Plot_Hierarchy_Proportion <- function(
     for (cat in sub_cats) {
       node_id <- paste0("Sub:", cat)
       node_list[[node_id]] <- list(
-        id       = node_id,
-        label    = cat,
-        layer    = "Sub",
-        is_leaf  = TRUE,
-        children = character(0),
-        n        = sum(sub_vec == cat, na.rm = TRUE)
+        id = node_id, label = cat, layer = "Sub",
+        is_leaf = TRUE, children = character(0),
+        n = sum(sub_vec == cat, na.rm = TRUE)
       )
     }
   }
 
-  # --- y coordinates (equal vertical spacing) --------------------------------
   if (has_Sub) {
     y_levels <- c(Main = 2.4, Cell = 1.2, Sub = 0)
   } else if (has_Cell) {
@@ -261,7 +243,6 @@ Plot_Hierarchy_Proportion <- function(
     node_list[[nm]]$y <- y_levels[nd$layer]
   }
 
-  # --- x coordinates (deterministic layout) ----------------------------------
   x_counter <- 1
   main_order <- sort(main_cats)
   for (mcat in main_order) {
@@ -301,7 +282,15 @@ Plot_Hierarchy_Proportion <- function(
   leaf_x_ordered <- sapply(leaf_nodes, `[[`, "x")[leaf_order]
   N_leaves <- length(leaf_nodes)
 
-  # --- colours ---------------------------------------------------------------
+  default_pal <- function(n, names = NULL) {
+    if (requireNamespace("scales", quietly = TRUE)) {
+      cols <- scales::hue_pal()(n)
+    } else {
+      cols <- grDevices::rainbow(n)
+    }
+    if (!is.null(names)) setNames(cols, names) else cols
+  }
+
   get_palette <- function(cats, user_cols) {
     if (!is.null(user_cols)) {
       if (!is.null(names(user_cols))) {
@@ -310,14 +299,11 @@ Plot_Hierarchy_Proportion <- function(
         pal[common] <- user_cols[common]
         missing <- cats[is.na(pal)]
         if (length(missing) > 0) {
-          message("Some categories lack user colours, auto-generating for: ",
-                  paste(missing, collapse = ", "))
           pal[missing] <- default_pal(length(missing))
         }
         return(pal)
       } else {
         if (length(user_cols) < length(cats)) {
-          warning("'user_cols' shorter than categories; colours will be recycled.")
           user_cols <- rep(user_cols, length.out = length(cats))
         }
         return(setNames(user_cols[seq_along(cats)], cats))
@@ -327,18 +313,7 @@ Plot_Hierarchy_Proportion <- function(
       cols <- tryCatch(ArchR::paletteDiscrete(cats), error = function(e) NULL)
       if (!is.null(cols)) return(setNames(cols, cats))
     }
-    message("ArchR is not available; falling back to default ggplot2 palette. ",
-            "Install ArchR for a wider colour range.")
     default_pal(length(cats), cats)
-  }
-
-  default_pal <- function(n, names = NULL) {
-    if (requireNamespace("scales", quietly = TRUE)) {
-      cols <- scales::hue_pal()(n)
-    } else {
-      cols <- grDevices::rainbow(n)
-    }
-    if (!is.null(names)) setNames(cols, names) else cols
   }
 
   pal_main <- get_palette(main_cats, col_Main_cell_types)
@@ -356,7 +331,6 @@ Plot_Hierarchy_Proportion <- function(
     }
   }
 
-  # --- prepare nodes & three‑segment edges -----------------------------------
   nodes_df <- do.call(rbind, lapply(node_list, function(nd) {
     data.frame(x = nd$x, y = nd$y, n = nd$n, fill = nd$fill,
                label = nd$label, layer = nd$layer, is_leaf = nd$is_leaf,
@@ -369,75 +343,60 @@ Plot_Hierarchy_Proportion <- function(
     for (i in seq_len(nrow(edf))) {
       from_lab <- edf$from[i]
       to_lab   <- edf$to[i]
-      if (e_type == "Main_Cell") {
-        from_id <- paste0("Main:", from_lab)
-        to_id   <- paste0("Cell:", to_lab)
-      } else {
-        from_id <- paste0("Cell:", from_lab)
-        to_id   <- paste0("Sub:", to_lab)
-      }
+      from_id  <- if (e_type == "Main_Cell") paste0("Main:", from_lab) else paste0("Cell:", from_lab)
+      to_id    <- if (e_type == "Main_Cell") paste0("Cell:", to_lab) else paste0("Sub:", to_lab)
+
       from_nd <- node_list[[from_id]]
       to_nd   <- node_list[[to_id]]
       if (is.null(from_nd) || is.null(to_nd)) next
+
       xp <- from_nd$x; yp <- from_nd$y
       xc <- to_nd$x;   yc <- to_nd$y
       ymid <- yp - (yp - yc) / 2
+
       edge_segments[[length(edge_segments) + 1]] <- data.frame(
-        x = xp, xend = xp, y = yp, yend = ymid,
-        group = paste0("edge_v1_", e_type, "_", i)
+        x = xp, xend = xp, y = yp, yend = ymid, group = paste0("v1_", e_type, "_", i)
       )
       if (abs(xp - xc) > 1e-6) {
         edge_segments[[length(edge_segments) + 1]] <- data.frame(
-          x = xp, xend = xc, y = ymid, yend = ymid,
-          group = paste0("edge_h_", e_type, "_", i)
+          x = xp, xend = xc, y = ymid, yend = ymid, group = paste0("h_", e_type, "_", i)
         )
       }
       edge_segments[[length(edge_segments) + 1]] <- data.frame(
-        x = xc, xend = xc, y = ymid, yend = yc,
-        group = paste0("edge_v2_", e_type, "_", i)
+        x = xc, xend = xc, y = ymid, yend = yc, group = paste0("v2_", e_type, "_", i)
       )
     }
   }
   edges_seg_df <- do.call(rbind, edge_segments)
 
-  # --- unified x limits ------------------------------------------------------
   xlim_use <- c(0.5, N_leaves + 0.5)
 
-  # --- 1. Tree panel with sticks and aligned labels --------------------------
+  min_n <- min(nodes_df$n, na.rm = TRUE)
+  max_n <- max(nodes_df$n, na.rm = TRUE)
+  size_breaks <- pretty(c(min_n, max_n), n = 4)
+  size_breaks <- size_breaks[size_breaks >= min_n & size_breaks <= max_n]
+  if (length(size_breaks) < 3) {
+    size_breaks <- unique(c(min_n, round(median(nodes_df$n)), max_n))
+  }
+
   max_y <- if (has_Sub) 2.4 else if (has_Cell) 1.2 else 0
 
-  # Fixed stick length and label offset
-  stick_len <- 0.10
-  label_offset <- 0.02   # tiny gap after stick before text
-
-  # Short stick from leaf node (y=0) down
-  leaf_stick_df <- data.frame(
-    x    = leaf_x_ordered,
-    xend = leaf_x_ordered,
-    y    = 0,
-    yend = -stick_len,
-    stringsAsFactors = FALSE
-  )
-  # Labels placed just below stick end, top-aligned
+  label_y_anchor <- -0.075
   leaf_label_df <- data.frame(
     x     = leaf_x_ordered,
-    y     = -(stick_len + label_offset),
+    y     = label_y_anchor,
     label = leaf_labels_ordered,
     stringsAsFactors = FALSE
   )
 
-  # Dynamic lower limit: account for the longest label rotated 90°
   max_nchar <- max(nchar(leaf_labels_ordered))
-  char_height <- 0.09   # data units per character at size=3 when rotated
-  label_height <- max_nchar * char_height
-  y_lower <- -(stick_len + label_offset + label_height + 0.05)
+  char_height <- 0.06
+  y_lower <- label_y_anchor - (max_nchar * char_height)
 
   p_tree <- ggplot2::ggplot() +
     ggplot2::geom_segment(
       data = edges_seg_df,
-      ggplot2::aes(x = .data$x, y = .data$y,
-                   xend = .data$xend, yend = .data$yend,
-                   group = .data$group),
+      ggplot2::aes(x = .data$x, y = .data$y, xend = .data$xend, yend = .data$yend, group = .data$group),
       colour = "black", linewidth = 0.3
     ) +
     ggplot2::geom_point(
@@ -445,34 +404,25 @@ Plot_Hierarchy_Proportion <- function(
       ggplot2::aes(x = .data$x, y = .data$y, size = .data$n, fill = I(.data$fill)),
       shape = 21, colour = "grey20", stroke = 0.3
     ) +
-    # Leaf sticks
-    ggplot2::geom_segment(
-      data = leaf_stick_df,
-      ggplot2::aes(x = .data$x, xend = .data$xend,
-                   y = .data$y, yend = .data$yend),
-      colour = "black", linewidth = 0.3
-    ) +
-    # Leaf labels (top-aligned, rotated)
     ggplot2::geom_text(
       data = leaf_label_df,
       ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
-      angle = 90, vjust = 0, hjust = 0.5, size = 3
+      angle = 90, vjust = 0.5, hjust = 1, size = 3
     ) +
     ggplot2::scale_size_area(
-      max_size = 10,
+      max_size = 8,
+      breaks = size_breaks,
       guide = ggplot2::guide_legend(title = "Cell count")
     ) +
     ggplot2::scale_x_continuous(expand = c(0, 0)) +
     ggplot2::scale_y_continuous(expand = c(0, 0)) +
-    ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(y_lower, max_y + 0.4),
-                             clip = "off") +
+    ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(y_lower, max_y + 0.3), clip = "off") +
     ggplot2::theme_void() +
     ggplot2::theme(
       legend.position = "right",
       plot.margin = ggplot2::margin(5, 5, 0, 5)
     )
 
-  # Non-leaf labels (if requested)
   if (show_labels) {
     label_nodes <- nodes_df[!nodes_df$is_leaf & nodes_df$layer %in% c("Main", "Cell"), ]
     if (nrow(label_nodes) > 0) {
@@ -485,17 +435,16 @@ Plot_Hierarchy_Proportion <- function(
     }
   }
 
-  # --- 2. Heatmap panel (with top ticks) ------------------------------------
   p_prop <- NULL
   if (proportion) {
     grp_vec <- as.character(meta[[Groups]])
     keep <- valid_char(grp_vec)
     grp_vec <- grp_vec[keep]
     leaf_id_sub <- leaf_id[keep]
+
     tab <- stats::aggregate(
       list(Freq = rep(1, length(grp_vec))),
-      list(Group = grp_vec,
-           End   = factor(leaf_id_sub, levels = leaf_ids_ordered)),
+      list(Group = grp_vec, End = factor(leaf_id_sub, levels = leaf_ids_ordered)),
       FUN = length
     )
     tab$Proportion <- stats::ave(tab$Freq, tab$Group, FUN = function(x) x / sum(x))
@@ -505,20 +454,21 @@ Plot_Hierarchy_Proportion <- function(
     tab$y_num <- as.numeric(factor(tab$Group, levels = group_levels))
     n_groups <- length(group_levels)
 
-    # Column ticks on top of heatmap
-    heatmap_stick_df <- data.frame(
-      x    = leaf_x_ordered,
-      xend = leaf_x_ordered,
-      y    = n_groups + 0.5,
-      yend = n_groups + 0.85,
-      stringsAsFactors = FALSE
-    )
     border_df <- data.frame(
-      xmin = 0.5,
-      xmax = N_leaves + 0.5,
-      ymin = 0.5,
-      ymax = n_groups + 0.5
+      xmin = 0.5, xmax = N_leaves + 0.5,
+      ymin = 0.5, ymax = n_groups + 0.5
     )
+
+    tick_df <- data.frame(
+      x = leaf_x_ordered,
+      xend = leaf_x_ordered,
+      y = n_groups + 0.5,
+      yend = n_groups + 0.7
+    )
+
+    min_prop <- min(tab$Proportion, na.rm = TRUE)
+    max_prop <- max(tab$Proportion, na.rm = TRUE)
+    prop_breaks <- pretty(c(min_prop, max_prop), n = 4)
 
     p_prop <- ggplot2::ggplot() +
       ggplot2::geom_tile(
@@ -528,19 +478,19 @@ Plot_Hierarchy_Proportion <- function(
       ) +
       ggplot2::geom_rect(
         data = border_df,
-        ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax,
-                     ymin = .data$ymin, ymax = .data$ymax),
+        ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin, ymax = .data$ymax),
         fill = NA, colour = "black", linewidth = 0.5
       ) +
       ggplot2::geom_segment(
-        data = heatmap_stick_df,
-        ggplot2::aes(x = .data$x, xend = .data$xend,
-                     y = .data$y, yend = .data$yend),
-        colour = "black", linewidth = 0.5
+        data = tick_df,
+        ggplot2::aes(x = .data$x, xend = .data$xend, y = .data$y, yend = .data$yend),
+        colour = "black", linewidth = 0.3
       ) +
       ggplot2::scale_fill_gradient(
         low = low_col, high = high_col,
-        limits = c(0, 1), name = "Proportion"
+        limits = c(min_prop, max_prop),
+        breaks = prop_breaks,
+        name = "Proportion"
       ) +
       ggplot2::scale_x_continuous(expand = c(0, 0)) +
       ggplot2::scale_y_continuous(
@@ -548,8 +498,7 @@ Plot_Hierarchy_Proportion <- function(
         labels = group_levels,
         expand = c(0, 0)
       ) +
-      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(0.5, n_groups + 0.9),
-                               clip = "off") +
+      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(0.5, n_groups + 0.7), clip = "off") +
       ggplot2::theme_minimal() +
       ggplot2::theme(
         axis.text.x = ggplot2::element_blank(),
@@ -561,7 +510,6 @@ Plot_Hierarchy_Proportion <- function(
       )
   }
 
-  # --- Combine panels --------------------------------------------------------
   combined <- NULL
   if (proportion && !is.null(p_prop)) {
     if (requireNamespace("patchwork", quietly = TRUE)) {
@@ -578,7 +526,6 @@ Plot_Hierarchy_Proportion <- function(
     }
   }
 
-  # --- Output ----------------------------------------------------------------
   if (!is.null(combined)) {
     print(combined)
   } else {
@@ -594,8 +541,8 @@ Plot_Hierarchy_Proportion <- function(
   }
 
   invisible(list(
-    tree_plot      = p_tree,
-    prop_plot      = p_prop,
-    combined_plot  = combined
+    tree_plot     = p_tree,
+    prop_plot     = p_prop,
+    combined_plot = combined
   ))
 }
