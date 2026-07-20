@@ -1,3 +1,12 @@
+## Version 1.1.7 (2026-07-20)
+
+*   **New Features**
+    *   `Plot_Hierarchy_Proportion()` creates a composite figure with a hierarchical cell‑type tree (bubbles and trapezoids) and an optional group proportion heatmap, handling partial sub‑type annotations and providing ArchR‑based or fallback colour palettes.
+
+*   **Improvements**
+    *   Added Section 5.3 demonstrating the new `Plot_Hierarchy_Proportion` function for hierarchical cell type visualisation.
+    *   Various minor bug fixes.
+
 ## Version 1.1.6 (2026-06-30)
 
 *   **New Features**

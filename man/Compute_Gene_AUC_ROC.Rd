@@ -14,7 +14,7 @@ Compute_Gene_AUC_ROC(
   min_expression = NULL,
   keep_expression_above = NULL,
   plot = TRUE,
-  plot_title = "ROC Curve | SlimR",
+  plot_title = "Gene ROC Curve | SlimR",
   line_color = "navy",
   line_size = 1
 )
@@ -104,6 +104,7 @@ Other Section_5_Other_Functions_Provided:
 \code{\link[=Celltype_annotation_Cellmarker2]{Celltype_annotation_Cellmarker2()}},
 \code{\link[=Celltype_annotation_Excel]{Celltype_annotation_Excel()}},
 \code{\link[=Celltype_annotation_PanglaoDB]{Celltype_annotation_PanglaoDB()}},
-\code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}}
+\code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}},
+\code{\link[=Plot_Hierarchy_Proportion]{Plot_Hierarchy_Proportion()}}
 }
 \concept{Section_5_Other_Functions_Provided}

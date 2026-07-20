@@ -28,6 +28,7 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
+    - [5.3 Hierarchical Proportion Plot](#53-hierarchical-proportion-plot)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -556,6 +557,65 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 </details>
 
+### 5.3 Hierarchical Proportion Plot
+
+Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
+The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent‑child links shown as three‑segment step lines). The **lower panel** (optional) displays per‑group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
+
+```r
+# Full three-level hierarchy with proportion heatmap
+res <- Plot_Hierarchy_Proportion(
+  seurat_obj        = sce,
+  Main_cell_types   = "Main_type",
+  Cell_types        = "Cell_type",
+  Sub_cell_types    = "Sub_type",
+  proportion        = TRUE,
+  Groups            = "orig.ident"
+)
+
+# Access individual plot components
+res$tree_plot        # ggplot object – tree including labels & short sticks
+res$prop_plot        # ggplot object – proportion heatmap
+res$combined_plot    # combined plot (requires patchwork)
+
+# Custom colours, only the tree
+res_tree <- Plot_Hierarchy_Proportion(
+  seurat_obj          = sce,
+  Main_cell_types     = "Main_type",
+  col_Main_cell_types = c(Immune = "red", Stromal = "blue", Epithelial = "green"),
+  Cell_types          = "Cell_type",
+  proportion          = FALSE
+)
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+- **Hierarchy levels**  
+  `Main_cell_types`, `Cell_types`, `Sub_cell_types` are character strings naming columns in `seurat_obj@meta.data`.  
+  Use `NULL` to omit a level. If `Sub_cell_types` is given, `Cell_types` must also be provided.  
+  Category names (e.g. “T cell”) must be **unique within each level** (they can repeat across levels).
+
+- **Partial sub‑clustering**  
+  It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub‑label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
+
+- **Label placement & adaptive height**  
+  Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
+
+- **Colour control**  
+  `col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function tries to obtain a palette via `ArchR::paletteDiscrete()`. If **ArchR** is not installed, it falls back to the standard **ggplot2** hue palette and prints an informative message.
+
+- **Proportion heatmap**  
+  `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
+  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis.
+
+- **Non‑leaf annotations**  
+  `show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
+
+- **Output**  
+  The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
+
+</details>
 
 ## 6. Citation
 
