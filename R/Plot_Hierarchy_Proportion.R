@@ -40,7 +40,7 @@
 #' @param low_col Character string for the lowest proportion colour in the
 #'   heatmap. Default is \code{"white"}.
 #' @param high_col Character string for the highest proportion colour in the
-#'   heatmap. Default is \code{"red"}.
+#'   heatmap. Default is \code{"navy"}.
 #'
 #' @return
 #' Invisibly, a list with the following components:
@@ -170,9 +170,21 @@ Plot_Hierarchy_Proportion <- function(
     leaf_id[] <- paste0("Main:", main_vec)
   }
 
-  main_cats <- unique(main_vec[valid_char(main_vec)])
-  cell_cats <- if (has_Cell) unique(cell_vec[valid_char(cell_vec)]) else character(0)
-  sub_cats  <- if (has_Sub)  unique(sub_vec[valid_char(sub_vec)])   else character(0)
+  # 通用提取函数：优先使用 Factor Levels 顺序
+  get_ordered_cats <- function(meta_col) {
+    if (is.factor(meta_col)) {
+      lvl <- levels(meta_col)
+      present <- intersect(lvl, as.character(meta_col))
+      return(present[valid_char(present)])
+    } else {
+      vec <- as.character(meta_col)
+      return(unique(vec[valid_char(vec)]))
+    }
+  }
+
+  main_cats <- get_ordered_cats(meta[[Main_cell_types]])
+  cell_cats <- if (has_Cell) get_ordered_cats(meta[[Cell_types]]) else character(0)
+  sub_cats  <- if (has_Sub)  get_ordered_cats(meta[[Sub_cell_types]])  else character(0)
 
   if (anyDuplicated(main_cats)) stop("Main cell type labels must be unique.")
   if (has_Cell && anyDuplicated(cell_cats)) stop("Cell type labels must be unique within this level.")
@@ -244,7 +256,8 @@ Plot_Hierarchy_Proportion <- function(
   }
 
   x_counter <- 1
-  main_order <- sort(main_cats)
+  main_order <- main_cats
+
   for (mcat in main_order) {
     main_id <- paste0("Main:", mcat)
     main_nd <- node_list[[main_id]]
@@ -254,7 +267,9 @@ Plot_Hierarchy_Proportion <- function(
     } else {
       child_ids <- main_nd$children
       cell_labs <- sapply(node_list[child_ids], `[[`, "label")
-      child_ids <- child_ids[order(cell_labs)]
+      # 按 cell_cats 的原始 Level 顺序排列 child_ids（取消字母排序 order(cell_labs)）
+      child_ids <- child_ids[order(match(cell_labs, cell_cats))]
+      
       for (cid in child_ids) {
         cell_nd <- node_list[[cid]]
         if (cell_nd$is_leaf) {
@@ -263,7 +278,9 @@ Plot_Hierarchy_Proportion <- function(
         } else {
           sub_ids <- cell_nd$children
           sub_labs <- sapply(node_list[sub_ids], `[[`, "label")
-          sub_ids <- sub_ids[order(sub_labs)]
+          # 按 sub_cats 的原始 Level 顺序排列 sub_ids（取消字母排序 order(sub_labs)）
+          sub_ids <- sub_ids[order(match(sub_labs, sub_cats))]
+          
           for (sid in sub_ids) {
             node_list[[sid]]$x <- x_counter
             x_counter <- x_counter + 1
@@ -309,9 +326,18 @@ Plot_Hierarchy_Proportion <- function(
         return(setNames(user_cols[seq_along(cats)], cats))
       }
     }
+    
     if (requireNamespace("ArchR", quietly = TRUE)) {
-      cols <- tryCatch(ArchR::paletteDiscrete(cats), error = function(e) NULL)
-      if (!is.null(cols)) return(setNames(cols, cats))
+      cats_factor <- factor(cats, levels = cats)
+      cols <- tryCatch(ArchR::paletteDiscrete(values = cats_factor), error = function(e) NULL)
+      
+      if (!is.null(cols)) {
+        if (!is.null(names(cols))) {
+          return(cols[cats])
+        } else {
+          return(setNames(cols[seq_along(cats)], cats))
+        }
+      }
     }
     default_pal(length(cats), cats)
   }
@@ -450,7 +476,7 @@ Plot_Hierarchy_Proportion <- function(
     tab$Proportion <- stats::ave(tab$Freq, tab$Group, FUN = function(x) x / sum(x))
     tab$x_num <- as.numeric(tab$End)
 
-    group_levels <- sort(unique(tab$Group))
+    group_levels <- get_ordered_cats(meta[[Groups]])
     tab$y_num <- as.numeric(factor(tab$Group, levels = group_levels))
     n_groups <- length(group_levels)
 
