@@ -579,15 +579,6 @@ res <- Plot_Hierarchy_Proportion(
 res$tree_plot        # ggplot object – tree including labels & short sticks
 res$prop_plot        # ggplot object – proportion heatmap
 res$combined_plot    # combined plot (requires patchwork)
-
-# Custom colours, only the tree
-res_tree <- Plot_Hierarchy_Proportion(
-  seurat_obj          = sce,
-  Main_cell_types     = "Main_type",
-  col_Main_cell_types = c(Immune = "red", Stromal = "blue", Epithelial = "green"),
-  Cell_types          = "Cell_type",
-  proportion          = FALSE
-)
 ```
 
 <details>
