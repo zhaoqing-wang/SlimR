@@ -56,7 +56,7 @@ labels are placed next to the non‑leaf Main and Cell level nodes.}
 heatmap. Default is \code{"white"}.}
 
 \item{high_col}{Character string for the highest proportion colour in the
-heatmap. Default is \code{"red"}.}
+heatmap. Default is \code{"navy"}.}
 }
 \value{
 Invisibly, a list with the following components:

@@ -170,7 +170,6 @@ Plot_Hierarchy_Proportion <- function(
     leaf_id[] <- paste0("Main:", main_vec)
   }
 
-  # 通用提取函数：优先使用 Factor Levels 顺序
   get_ordered_cats <- function(meta_col) {
     if (is.factor(meta_col)) {
       lvl <- levels(meta_col)
@@ -267,7 +266,6 @@ Plot_Hierarchy_Proportion <- function(
     } else {
       child_ids <- main_nd$children
       cell_labs <- sapply(node_list[child_ids], `[[`, "label")
-      # 按 cell_cats 的原始 Level 顺序排列 child_ids（取消字母排序 order(cell_labs)）
       child_ids <- child_ids[order(match(cell_labs, cell_cats))]
       
       for (cid in child_ids) {
@@ -278,7 +276,6 @@ Plot_Hierarchy_Proportion <- function(
         } else {
           sub_ids <- cell_nd$children
           sub_labs <- sapply(node_list[sub_ids], `[[`, "label")
-          # 按 sub_cats 的原始 Level 顺序排列 sub_ids（取消字母排序 order(sub_labs)）
           sub_ids <- sub_ids[order(match(sub_labs, sub_cats))]
           
           for (sid in sub_ids) {
@@ -328,8 +325,10 @@ Plot_Hierarchy_Proportion <- function(
     }
     
     if (requireNamespace("ArchR", quietly = TRUE)) {
-      cats_factor <- factor(cats, levels = cats)
-      cols <- tryCatch(ArchR::paletteDiscrete(values = cats_factor), error = function(e) NULL)
+      cols <- tryCatch(
+        ArchR::paletteDiscrete(values = cats),
+        error = function(e) NULL
+      )
       
       if (!is.null(cols)) {
         if (!is.null(names(cols))) {
@@ -339,6 +338,7 @@ Plot_Hierarchy_Proportion <- function(
         }
       }
     }
+    
     default_pal(length(cats), cats)
   }
 
