@@ -43,7 +43,7 @@ categories.}
 
 \item{proportion}{Logical scalar.  If \code{TRUE} (the default), a
 proportion heatmap is drawn below the tree; if \code{FALSE}, only the
-tree is returned.}
+tree with labels is returned.}
 
 \item{Groups}{Character string naming a \code{meta.data} column that
 defines sample groups for the proportion heatmap.  Required when
@@ -61,9 +61,10 @@ heatmap. Default is \code{"red"}.}
 \value{
 Invisibly, a list with the following components:
 \describe{
-\item{tree_plot}{A \pkg{ggplot2} object with the hierarchical tree.}
-\item{prop_plot}{If \code{proportion = TRUE}, a \pkg{ggplot2} heatmap of
-per‑group proportions; otherwise \code{NULL}.}
+\item{tree_plot}{A \pkg{ggplot2} object with the hierarchical tree,
+leaf sticks, and labels.}
+\item{prop_plot}{If \code{proportion = TRUE}, a \pkg{ggplot2} heatmap with
+top ticks; otherwise \code{NULL}.}
 \item{combined_plot}{If \code{proportion = TRUE} and \pkg{patchwork} is
 installed, a combined plot with title \emph{Hierarchical Proportion Plot | SlimR};
 otherwise \code{NULL}.}
@@ -73,19 +74,13 @@ The function automatically prints the \code{combined_plot} (or the
 device.
 }
 \description{
-Creates a composite figure that visualises the hierarchical classification of
-single-cell data from broad cell types down to fine sub-types.  The upper
-panel draws a layered tree diagram where each classification level is shown
-as a row of bubbles (size ∝ cell count) and parent–child relationships are
-displayed as three‑segment step lines.  If requested, the lower panel adds a
-heatmap of per‑group cell-type proportions, aligned with the terminal leaves
-of the tree.
-
-The function handles the common situation where only a subset of cells
-receive a finer annotation: a cell that lacks a sub‑type label is treated
-as a leaf at the deepest level where it has a valid annotation.  The
-proportion heatmap is then constructed using the union of all such leaf
-labels.
+Creates a publication‑quality composite figure with a hierarchical tree
+panel and an optional proportion heatmap.  Leaf labels are connected to the
+terminal nodes by short vertical sticks and placed at a fixed distance
+below the tree, guaranteeing a clean separation and perfect top alignment
+of all cell‑type names.  Short vertical ticks on top of the heatmap mark
+each column, aligning with the labels above.  The tree height is independent
+of label length; the heatmap sits tightly beneath the labels.
 
 Colours can be supplied for each annotation level.  When colours are
 missing, the function tries to obtain a perceptually uniform palette via
