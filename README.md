@@ -597,7 +597,9 @@ res$combined_plot    # combined plot (requires patchwork)
   Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
 
 - **Colour control**  
-  `col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function tries to obtain a palette via `ArchR::paletteDiscrete()`. If **ArchR** is not installed, it falls back to the standard **ggplot2** hue palette and prints an informative message.
+  col_Main_cell_types, col_Cell_types, col_Sub_cell_types accept named or unnamed colour vectors. When missing, the function tries to obtain a palette via `ArchR::paletteDiscrete()`. If ArchR is not installed, it falls back to the standard ggplot2 hue palette and prints an informative message.
+  
+  *Note: ArchR is not on CRAN or Bioconductor; it can be installed from GitHub using `devtools::install_github("GreenleafLab/ArchR")`.*
 
 - **Proportion heatmap**  
   `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
@@ -656,9 +658,9 @@ res$plot              # the ggplot object
   A single integer passed to the Voronoi layout algorithm. The same seed yields the same polygon arrangement across runs.
 
 - **Colour control (`col_Cell_types`)**  
-  Accepts a named or unnamed character vector of colours for the `Cell_types` categories.  
-  If `NULL`, colours are automatically generated via `ArchR::paletteDiscrete()` (if ArchR is installed) or the standard ggplot2 hue palette.  
-  A message is printed when falling back to the default palette.
+  Accepts a named or unnamed character vector of colours for the Cell_types categories. If NULL, colours are automatically generated via `ArchR::paletteDiscrete()` (if ArchR is installed) or the standard ggplot2 hue palette. A message is printed when falling back to the default palette.
+  
+  *Note: ArchR can be installed from GitHub with `devtools::install_github("GreenleafLab/ArchR")`.*
 
 - **Label appearance**  
   `label_size` controls the text size inside polygons (default `3`).  
