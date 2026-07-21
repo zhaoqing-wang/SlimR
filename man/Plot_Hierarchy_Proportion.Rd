@@ -84,10 +84,21 @@ of label length; the heatmap sits tightly beneath the labels.
 
 Colours can be supplied for each annotation level.  When colours are
 missing, the function tries to obtain a perceptually uniform palette via
-\code{\link[ArchR:paletteDiscrete]{ArchR::paletteDiscrete()}}; if
-\pkg{ArchR} is unavailable, it falls back to the default \pkg{ggplot2}
+\code{ArchR::paletteDiscrete()} (see \strong{Installation of ArchR} below);
+if\pkg{ArchR} is unavailable, it falls back to the default \pkg{ggplot2}
 hue palette and prints an informative message.
 }
+\section{Installation of ArchR}{
+
+ArchR is not available on CRAN or Bioconductor. It can be installed from GitHub using:
+\preformatted{
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+devtools::install_github("GreenleafLab/ArchR", ref = "master",
+                         repos = BiocManager::repositories())
+}
+}
+
 \examples{
 \dontrun{
 # Full three-level hierarchy with proportion heatmap

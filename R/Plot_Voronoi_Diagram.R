@@ -20,6 +20,15 @@
 #' cell type receives exactly its intended colour regardless of internal
 #' cell order.
 #'
+#' @section Installation of ArchR:
+#' ArchR is not available on CRAN or Bioconductor. It can be installed from GitHub using:
+#' \preformatted{
+#' if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+#' if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+#' devtools::install_github("GreenleafLab/ArchR", ref = "master",
+#'                          repos = BiocManager::repositories())
+#' }
+#' 
 #' @param seurat_obj A Seurat object.
 #' @param Main_cell_types Character string naming a column in
 #'   \code{seurat_obj@meta.data} that holds the top-level (main) cell-type labels.

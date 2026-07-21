@@ -96,6 +96,17 @@ The custom drawing code extracts polygon vertices and uses
 cell type receives exactly its intended colour regardless of internal
 cell order.
 }
+\section{Installation of ArchR}{
+
+ArchR is not available on CRAN or Bioconductor. It can be installed from GitHub using:
+\preformatted{
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+devtools::install_github("GreenleafLab/ArchR", ref = "master",
+                         repos = BiocManager::repositories())
+}
+}
+
 \examples{
 \dontrun{
 # Basic rounded-rectangle treemap with both count and percentage labels
