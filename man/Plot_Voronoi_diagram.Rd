@@ -12,10 +12,15 @@ Plot_Voronoi_diagram(
   shape = c("rounded_rect", "circle"),
   seed = 1,
   col_Cell_types = NULL,
-  label_size = 3,
+  label_size = 3.5,
   label_color = "black",
+  label_fontface = "bold",
+  border_color = "grey90",
+  subtype_border_lwd = 0.5,
+  main_border_lwd = 1.5,
+  outer_border_lwd = 2,
   legend = TRUE,
-  legend_position = "bottom"
+  legend_position = "right"
 )
 }
 \arguments{
@@ -34,21 +39,42 @@ or \code{"none"}. Default is \code{"both"}.}
 \item{shape}{Character string specifying the shape of the polygons.
 \code{"rounded_rect"} (default) or \code{"circle"}.}
 
-\item{seed}{Integer seed for reproducibility of the Voronoi layout. Default is \code{1}.}
+\item{seed}{Integer seed for reproducibility of the Voronoi layout.
+Default is \code{1}.}
 
 \item{col_Cell_types}{Optional named or unnamed character vector of colours
 for the \code{Cell_types} categories.}
 
-\item{label_size}{Numeric value controlling the size of the polygon labels. Default is \code{3}.}
+\item{label_size}{Numeric value controlling the size of the polygon labels.
+Default is \code{3}.}
 
 \item{label_color}{Colour of the polygon labels. Default is \code{"black"}.}
 
-\item{legend}{Logical indicating whether to display a colour legend. Default is \code{TRUE}.}
+\item{label_fontface}{Font face for polygon labels (\code{"plain"},
+\code{"italic"}, \code{"bold"}, etc.). Default is \code{"bold"}.}
 
-\item{legend_position}{Position of the legend when \code{legend = TRUE}. Default is \code{"bottom"}.}
+\item{border_color}{Colour of the border lines separating polygons.
+Default is \code{"grey90"} (a very light grey).}
+
+\item{subtype_border_lwd}{Line width for borders between sub‑type polygons.
+Default is \code{0.15}.}
+
+\item{main_border_lwd}{Line width for borders between main cell types.
+Default is \code{0.35}.}
+
+\item{outer_border_lwd}{Line width for the outer frame of the entire plot.
+The frame is drawn as a tight convex hull around the outermost polygons,
+perfectly following the natural outline of the treemap. Default is \code{0.4}.}
+
+\item{legend}{Logical indicating whether to display a colour legend.
+Default is \code{TRUE}.}
+
+\item{legend_position}{Position of the legend when \code{legend = TRUE}.
+Default is \code{"right"}.}
 }
 \value{
-Invisibly, a list with \code{voronoi_treemap} and \code{plot}.
+Invisibly, a list with \code{voronoi_treemap} (the raw treemap object) and
+\code{plot} (the \pkg{ggplot2} object).
 }
 \description{
 Creates a weighted Voronoi treemap displaying the hierarchical composition
@@ -56,6 +82,19 @@ of single‑cell data. The area of each polygon is proportional to the
 number of cells in the corresponding sub‑type, and the polygons are
 grouped by the main cell type. Each sub‑type is filled with a distinct
 colour matching the ArchR or custom palette.
+
+\strong{Note on colour handling:}
+The function uses \code{WeightedTreemaps::voronoiTreemap()} to compute polygon
+coordinates, but \strong{replaces the original drawing routine} with a custom
+\code{ggplot2}‑based renderer. This is necessary because the upstream
+\code{add_color()} function treats discrete palettes as continuous gradients
+and does not respect the order of polygon cells, making it impossible
+to guarantee exact colour correspondence with functions like
+\code{Plot_Hierarchy_Proportion} or \code{Seurat::DimPlot}.
+The custom drawing code extracts polygon vertices and uses
+\code{scale_fill_manual()} with a named colour vector, ensuring that each
+cell type receives exactly its intended colour regardless of internal
+cell order.
 }
 \examples{
 \dontrun{

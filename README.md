@@ -613,9 +613,9 @@ res$combined_plot    # combined plot (requires patchwork)
 
 ### 5.4 Weighted Voronoi Plot
 
-Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data.  
-Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count.  
-Colours follow the same palette logic as other SlimR functions (ArchR if available, else ggplot2 default hues).
+Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions (ArchR if available, else ggplot2 default hues).
+
+The plot is drawn using a custom `ggplot2`‑based renderer to ensure exact colour matching with `Plot_Hierarchy_Proportion` and `DimPlot`, bypassing the limited colour handling of the upstream `WeightedTreemaps` package.
 
 ```r
 # Basic treemap with rounded rectangles, displaying both count and percentage
@@ -628,8 +628,9 @@ res <- Plot_Voronoi_diagram(
   seed            = 1
 )
 
-# Access the underlying treemap object
+# Access the underlying treemap object or the final ggplot
 res$voronoi_treemap   # the treemap object from WeightedTreemaps
+res$plot              # the ggplot object
 ```
 
 <details>
@@ -661,19 +662,28 @@ res$voronoi_treemap   # the treemap object from WeightedTreemaps
 
 - **Label appearance**  
   `label_size` controls the text size inside polygons (default `3`).  
-  `label_color` sets the text colour (default `"black"`).
+  `label_color` sets the text colour (default `"black"`).  
+  `label_fontface` controls the font face (`"plain"`, `"italic"`, `"bold"`; default `"bold"`).
+
+- **Borders and frames**  
+  The function draws three types of borders:
+  - **Sub‑type borders** (`subtype_border_lwd`, default `0.15`) – thin lines between individual sub‑type polygons.
+  - **Main borders** (`main_border_lwd`, default `0.35`) – thicker lines between main cell type regions, drawn on top of sub‑type borders for clear separation.
+  - **Outer frame** (`outer_border_lwd`, default `0.4`) – a convex hull tightly surrounding the entire plot, following the natural outline of the treemap.
+  All borders share the same `border_color` (default `"grey90"`, a very light grey). This parameter can be customised to any valid R colour.
 
 - **Legend**  
-  `legend = TRUE` (default) shows a colour legend; `legend_position` controls its placement (default `"bottom"`, also accepts `"right"`, `"left"`, `"top"`, or `"none"`).
+  `legend = TRUE` (default) shows a colour legend; `legend_position` controls its placement (default `"right"`, also accepts `"left"`, `"bottom"`, `"top"`, or `"none"`).
 
 - **Output**  
   The function invisibly returns a list with two components:
-  - `voronoi_treemap`: the raw `voronoiTreemap` object from `WeightedTreemaps`.
-  - `plot`: the final `ggplot` object produced by `drawTreemap()`.
+  - `voronoi_treemap`: the raw `voronoiTreemap` object from `WeightedTreemaps`, containing polygon coordinates and metadata.
+  - `plot`: the final `ggplot` object, produced by a custom drawing routine that extracts polygon vertices and applies colours via `scale_fill_manual()`.
   The plot is automatically printed to the active graphics device.
 
 - **Dependencies**  
-  Requires the `WeightedTreemaps` package, available from GitHub. If not installed, an error is thrown with installation instructions.
+  Requires the `WeightedTreemaps` package, available from GitHub. If not installed, an error is thrown with installation instructions.  
+  The function only uses `WeightedTreemaps::voronoiTreemap()` to compute polygon layouts; all rendering is done with `ggplot2`.
 
 </details>
 
