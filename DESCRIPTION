@@ -28,9 +28,10 @@ Suggests:
     crayon,
     RANN,
     testthat (>= 3.0.0),
-    ArchR
+    ArchR,
+    WeightedTreemaps
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-Date: 2026-07-20
+Date: 2026-07-21
 Config/roxygen2/version: 8.0.0

@@ -1,10 +1,12 @@
-## Version 1.1.7 (2026-07-20)
+## Version 1.1.7 (2026-07-21)
 
 *   **New Features**
     *   `Plot_Hierarchy_Proportion()` creates a composite figure with a hierarchical cell‑type tree (bubbles and trapezoids) and an optional group proportion heatmap, handling partial sub‑type annotations and providing ArchR‑based or fallback colour palettes.
+    *   `Plot_Voronoi_diagram()` generates a weighted Voronoi treemap of hierarchical cell‑type composition, with polygon area proportional to cell count and sub‑type colours matching the same palette logic as `Plot_Hierarchy_Proportion`.
 
 *   **Improvements**
     *   Added Section 5.3 demonstrating the new `Plot_Hierarchy_Proportion` function for hierarchical cell type visualisation.
+    *   Added Section 5.4 showcasing `Plot_Voronoi_diagram` with a detailed parameter guide and example code.
     *   Various minor bug fixes.
 
 ## Version 1.1.6 (2026-06-30)

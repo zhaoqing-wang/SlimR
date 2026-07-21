@@ -29,6 +29,7 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [5.1 Cell type mapping](#51-cell-type-mapping)
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
     - [5.3 Hierarchical Proportion Plot](#53-hierarchical-proportion-plot)
+    - [5.4 Weighted Voronoi Plot](#54-weighted-voronoi-plot)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -607,6 +608,72 @@ res$combined_plot    # combined plot (requires patchwork)
 
 - **Output**  
   The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
+
+</details>
+
+### 5.4 Weighted Voronoi Plot
+
+Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data.  
+Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count.  
+Colours follow the same palette logic as other SlimR functions (ArchR if available, else ggplot2 default hues).
+
+```r
+# Basic treemap with rounded rectangles, displaying both count and percentage
+res <- Plot_Voronoi_diagram(
+  seurat_obj      = sce,
+  Main_cell_types = "Main_type",
+  Cell_types      = "Cell_type",
+  label_type      = "both",
+  shape           = "rounded_rect",
+  seed            = 1
+)
+
+# Access the underlying treemap object
+res$voronoi_treemap   # the treemap object from WeightedTreemaps
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+- **Data & hierarchy**  
+  `Main_cell_types` and `Cell_types` are column names in `seurat_obj@meta.data` defining the two‑level hierarchy.  
+  Only cells with valid (non‑missing, non‑empty) labels in both columns are used.  
+  The voronoi diagram groups cells by main type (level 1) and further splits each main type into sub‑type polygons (level 2).
+
+- **Polygon labels (`label_type`)**  
+  Controls the text displayed inside each sub‑type polygon:
+  - `"both"` (default) – shows the sub‑type name, cell count, and percentage of total cells (each on a new line).
+  - `"count"` – shows sub‑type name and cell count.
+  - `"percentage"` – shows sub‑type name and percentage of total cells.
+  - `"none"` – shows only the sub‑type name.
+
+- **Polygon shape (`shape`)**  
+  `"rounded_rect"` (default) produces rounded rectangles; `"circle"` yields circular polygons.  
+  The layout is non‑deterministic but can be made reproducible via the `seed` parameter.
+
+- **Reproducibility (`seed`)**  
+  A single integer passed to the Voronoi layout algorithm. The same seed yields the same polygon arrangement across runs.
+
+- **Colour control (`col_Cell_types`)**  
+  Accepts a named or unnamed character vector of colours for the `Cell_types` categories.  
+  If `NULL`, colours are automatically generated via `ArchR::paletteDiscrete()` (if ArchR is installed) or the standard ggplot2 hue palette.  
+  A message is printed when falling back to the default palette.
+
+- **Label appearance**  
+  `label_size` controls the text size inside polygons (default `3`).  
+  `label_color` sets the text colour (default `"black"`).
+
+- **Legend**  
+  `legend = TRUE` (default) shows a colour legend; `legend_position` controls its placement (default `"bottom"`, also accepts `"right"`, `"left"`, `"top"`, or `"none"`).
+
+- **Output**  
+  The function invisibly returns a list with two components:
+  - `voronoi_treemap`: the raw `voronoiTreemap` object from `WeightedTreemaps`.
+  - `plot`: the final `ggplot` object produced by `drawTreemap()`.
+  The plot is automatically printed to the active graphics device.
+
+- **Dependencies**  
+  Requires the `WeightedTreemaps` package, available from GitHub. If not installed, an error is thrown with installation instructions.
 
 </details>
 
