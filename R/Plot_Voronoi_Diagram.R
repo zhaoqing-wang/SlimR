@@ -2,15 +2,15 @@
 #'
 #' @description
 #' Creates a weighted Voronoi treemap displaying the hierarchical composition
-#' of single‑cell data. The area of each polygon is proportional to the
-#' number of cells in the corresponding sub‑type, and the polygons are
-#' grouped by the main cell type. Each sub‑type is filled with a distinct
+#' of single-cell data. The area of each polygon is proportional to the
+#' number of cells in the corresponding sub-type, and the polygons are
+#' grouped by the main cell type. Each sub-type is filled with a distinct
 #' colour matching the ArchR or custom palette.
 #'
 #' **Note on colour handling:**  
 #' The function uses `WeightedTreemaps::voronoiTreemap()` to compute polygon
 #' coordinates, but **replaces the original drawing routine** with a custom
-#' `ggplot2`‑based renderer. This is necessary because the upstream
+#' `ggplot2`-based renderer. This is necessary because the upstream
 #' `add_color()` function treats discrete palettes as continuous gradients
 #' and does not respect the order of polygon cells, making it impossible
 #' to guarantee exact colour correspondence with functions like
@@ -22,9 +22,9 @@
 #'
 #' @param seurat_obj A Seurat object.
 #' @param Main_cell_types Character string naming a column in
-#'   \code{seurat_obj@meta.data} that holds the top‑level (main) cell‑type labels.
+#'   \code{seurat_obj@meta.data} that holds the top-level (main) cell-type labels.
 #' @param Cell_types Character string naming a column in
-#'   \code{seurat_obj@meta.data} that holds the sub‑type labels.
+#'   \code{seurat_obj@meta.data} that holds the sub-type labels.
 #' @param label_type Character string specifying the type of label to display
 #'   inside each polygon. One of \code{"both"}, \code{"count"}, \code{"percentage"},
 #'   or \code{"none"}. Default is \code{"both"}.
@@ -41,7 +41,7 @@
 #'   \code{"italic"}, \code{"bold"}, etc.). Default is \code{"bold"}.
 #' @param border_color Colour of the border lines separating polygons.
 #'   Default is \code{"grey90"} (a very light grey).
-#' @param subtype_border_lwd Line width for borders between sub‑type polygons.
+#' @param subtype_border_lwd Line width for borders between sub-type polygons.
 #'   Default is \code{0.15}.
 #' @param main_border_lwd Line width for borders between main cell types.
 #'   Default is \code{0.35}.
@@ -69,7 +69,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Basic rounded‑rectangle treemap with both count and percentage labels
+#' # Basic rounded-rectangle treemap with both count and percentage labels
 #' Plot_Voronoi_diagram(
 #'   seurat_obj      = sce,
 #'   Main_cell_types = "compartment",
@@ -93,7 +93,7 @@
 #'   legend_position = "right"
 #' )
 #'
-#' # Only sub‑type names, no legend
+#' # Only sub-type names, no legend
 #' Plot_Voronoi_diagram(
 #'   sce,
 #'   "compartment",
@@ -269,7 +269,7 @@ Plot_Voronoi_diagram <- function(
   sub_poly_df <- do.call(rbind, sub_poly_list)
 
   if (is.null(sub_poly_df) || nrow(sub_poly_df) == 0) {
-    stop("No sub‑type polygons could be extracted from the treemap.")
+    stop("No sub-type polygons could be extracted from the treemap.")
   }
 
   sub_poly_df$Cell_type <- sub("\n.*$", "", sub_poly_df$name)
@@ -298,13 +298,13 @@ Plot_Voronoi_diagram <- function(
   }
 
   p <- ggplot2::ggplot() +
-    # Sub‑type fill (no border)
+    # Sub-type fill (no border)
     ggplot2::geom_polygon(
       data = sub_poly_df,
       ggplot2::aes(x = .data$x, y = .data$y, group = .data$name, fill = .data$Cell_type),
       colour = NA
     ) +
-    # Sub‑type thin border
+    # Sub-type thin border
     ggplot2::geom_polygon(
       data = sub_poly_df,
       ggplot2::aes(x = .data$x, y = .data$y, group = .data$name),

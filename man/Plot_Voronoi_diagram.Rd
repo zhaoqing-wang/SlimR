@@ -27,10 +27,10 @@ Plot_Voronoi_diagram(
 \item{seurat_obj}{A Seurat object.}
 
 \item{Main_cell_types}{Character string naming a column in
-\code{seurat_obj@meta.data} that holds the top‑level (main) cell‑type labels.}
+\code{seurat_obj@meta.data} that holds the top-level (main) cell-type labels.}
 
 \item{Cell_types}{Character string naming a column in
-\code{seurat_obj@meta.data} that holds the sub‑type labels.}
+\code{seurat_obj@meta.data} that holds the sub-type labels.}
 
 \item{label_type}{Character string specifying the type of label to display
 inside each polygon. One of \code{"both"}, \code{"count"}, \code{"percentage"},
@@ -56,7 +56,7 @@ Default is \code{3}.}
 \item{border_color}{Colour of the border lines separating polygons.
 Default is \code{"grey90"} (a very light grey).}
 
-\item{subtype_border_lwd}{Line width for borders between sub‑type polygons.
+\item{subtype_border_lwd}{Line width for borders between sub-type polygons.
 Default is \code{0.15}.}
 
 \item{main_border_lwd}{Line width for borders between main cell types.
@@ -78,15 +78,15 @@ Invisibly, a list with \code{voronoi_treemap} (the raw treemap object) and
 }
 \description{
 Creates a weighted Voronoi treemap displaying the hierarchical composition
-of single‑cell data. The area of each polygon is proportional to the
-number of cells in the corresponding sub‑type, and the polygons are
-grouped by the main cell type. Each sub‑type is filled with a distinct
+of single-cell data. The area of each polygon is proportional to the
+number of cells in the corresponding sub-type, and the polygons are
+grouped by the main cell type. Each sub-type is filled with a distinct
 colour matching the ArchR or custom palette.
 
 \strong{Note on colour handling:}
 The function uses \code{WeightedTreemaps::voronoiTreemap()} to compute polygon
 coordinates, but \strong{replaces the original drawing routine} with a custom
-\code{ggplot2}‑based renderer. This is necessary because the upstream
+\code{ggplot2}-based renderer. This is necessary because the upstream
 \code{add_color()} function treats discrete palettes as continuous gradients
 and does not respect the order of polygon cells, making it impossible
 to guarantee exact colour correspondence with functions like
@@ -98,7 +98,7 @@ cell order.
 }
 \examples{
 \dontrun{
-# Basic rounded‑rectangle treemap with both count and percentage labels
+# Basic rounded-rectangle treemap with both count and percentage labels
 Plot_Voronoi_diagram(
   seurat_obj      = sce,
   Main_cell_types = "compartment",
@@ -122,7 +122,7 @@ Plot_Voronoi_diagram(
   legend_position = "right"
 )
 
-# Only sub‑type names, no legend
+# Only sub-type names, no legend
 Plot_Voronoi_diagram(
   sce,
   "compartment",
