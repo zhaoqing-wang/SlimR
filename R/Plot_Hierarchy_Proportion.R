@@ -9,17 +9,17 @@
 #' each column, aligning with the labels above.  The tree height is independent
 #' of label length; the heatmap sits tightly beneath the labels.
 #'
-#' Colours can be supplied for each annotation level.  When colours are
-#' missing, the function obtains a perceptually uniform palette via the
-#' built‑in \code{paletteDiscrete()} function, which reproduces the
-#' **Stallion** (and other) palettes from the **ArchR** package.
-#' (\url{https://www.archrproject.com/}; Granja *et al.*, 2021).
-#'
-#' @references
+#' @section Colour palette:
+#' The default colour palette is derived from the **ArchR** package
+#' (\href{https://www.archrproject.com/}{ArchR project site},
+#' \href{https://github.com/GreenleafLab/ArchR}{GitHub}).
+#' If no custom palette is supplied, the function calls the internal
+#' `paletteDiscrete()` function, which replicates the *stallion* palette
+#' from ArchR. When the number of categories exceeds the palette size,
+#' colours are interpolated. ArchR is described in:
 #' Granja JM, Corces MR et al. ArchR is a scalable software package for
 #' integrative single-cell chromatin accessibility analysis.
 #' *Nature Genetics*, 2021. \doi{10.1038/s41588-021-00790-6}
-#' \url{https://github.com/GreenleafLab/ArchR}
 #'
 #' @param seurat_obj A Seurat object.
 #' @param Main_cell_types Character string naming a column in
