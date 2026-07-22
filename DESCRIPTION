@@ -23,15 +23,15 @@ Imports:
     Seurat,
     tidyr,
     tools,
-    tibble
+    tibble,
+    gtools
 Suggests:
     crayon,
     RANN,
     testthat (>= 3.0.0),
-    ArchR,
     WeightedTreemaps
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-Date: 2026-07-21
+Date: 2026-07-22
 Config/roxygen2/version: 8.0.0

@@ -83,22 +83,11 @@ each column, aligning with the labels above.  The tree height is independent
 of label length; the heatmap sits tightly beneath the labels.
 
 Colours can be supplied for each annotation level.  When colours are
-missing, the function tries to obtain a perceptually uniform palette via
-\code{ArchR::paletteDiscrete()} (see \strong{Installation of ArchR} below);
-if\pkg{ArchR} is unavailable, it falls back to the default \pkg{ggplot2}
-hue palette and prints an informative message.
+missing, the function obtains a perceptually uniform palette via the
+built‑in \code{paletteDiscrete()} function, which reproduces the
+\strong{Stallion} (and other) palettes from the \strong{ArchR} package.
+(\url{http://www.archrproject.com/}; Granja \emph{et al.}, 2021).
 }
-\section{Installation of ArchR}{
-
-ArchR is not available on CRAN or Bioconductor. It can be installed from GitHub using:
-\preformatted{
-if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-devtools::install_github("GreenleafLab/ArchR", ref = "master",
-                         repos = BiocManager::repositories())
-}
-}
-
 \examples{
 \dontrun{
 # Full three-level hierarchy with proportion heatmap
@@ -121,6 +110,13 @@ res <- Plot_Hierarchy_Proportion(
 )
 }
 }
+\references{
+Granja JM, Corces MR et al. ArchR is a scalable software package for
+integrative single-cell chromatin accessibility analysis.
+\emph{Nature Genetics}, 2021.
+\url{https://doi.org/10.1038/s41588-021-00790-6}
+\url{https://github.com/GreenleafLab/ArchR}
+}
 \seealso{
 Other Section_5_Other_Functions_Provided:
 \code{\link[=Celltype_Compare]{Celltype_Compare()}},
@@ -129,6 +125,7 @@ Other Section_5_Other_Functions_Provided:
 \code{\link[=Celltype_annotation_PanglaoDB]{Celltype_annotation_PanglaoDB()}},
 \code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}},
 \code{\link[=Compute_Gene_AUC_ROC]{Compute_Gene_AUC_ROC()}},
-\code{\link[=Plot_Voronoi_diagram]{Plot_Voronoi_diagram()}}
+\code{\link[=Plot_Voronoi_diagram]{Plot_Voronoi_diagram()}},
+\code{\link[=paletteDiscrete]{paletteDiscrete()}}
 }
 \concept{Section_5_Other_Functions_Provided}

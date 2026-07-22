@@ -30,6 +30,7 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
     - [5.3 Hierarchical Proportion Plot](#53-hierarchical-proportion-plot)
     - [5.4 Weighted Voronoi Plot](#54-weighted-voronoi-plot)
+    - [5.5 Built‑in Colour Palettes](#55-builtin-colour-palettes)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -558,6 +559,13 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 </details>
 
+以下是优化后的 README 5.3、5.4 节以及新增的 5.5 节。主要改动：
+
+- 5.3 和 5.4 中关于颜色的描述改为：调色板源自 ArchR，但已内置于 SlimR，无需额外安装 ArchR。
+- 删除了原有的 ArchR 安装指引，仅保留说明颜色源自 ArchR 的内置调色板。
+- 新增 5.5 节 `paletteDiscrete`，详细介绍内置调色板，注明文献引用、官网、GitHub、MIT 许可证，并给出简单示例。
+
+```markdown
 ### 5.3 Hierarchical Proportion Plot
 
 Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
@@ -597,9 +605,7 @@ res$combined_plot    # combined plot (requires patchwork)
   Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
 
 - **Colour control**  
-  col_Main_cell_types, col_Cell_types, col_Sub_cell_types accept named or unnamed colour vectors. When missing, the function tries to obtain a palette via `ArchR::paletteDiscrete()`. If ArchR is not installed, it falls back to the standard ggplot2 hue palette and prints an informative message.
-  
-  *Note: ArchR is not on CRAN or Bioconductor; it can be installed from GitHub using `devtools::install_github("GreenleafLab/ArchR")`.*
+  `col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function generates a palette using the internal `paletteDiscrete()` function, which replicates the *stallion* palette from the **ArchR** package.  No external ArchR installation is required.
 
 - **Proportion heatmap**  
   `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
@@ -615,7 +621,7 @@ res$combined_plot    # combined plot (requires patchwork)
 
 ### 5.4 Weighted Voronoi Plot
 
-Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions (ArchR if available, else ggplot2 default hues).
+Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions, derived from ArchR but fully built into the package.
 
 The plot is drawn using a custom `ggplot2`‑based renderer to ensure exact colour matching with `Plot_Hierarchy_Proportion` and `DimPlot`, bypassing the limited colour handling of the upstream `WeightedTreemaps` package.
 
@@ -658,9 +664,7 @@ res$plot              # the ggplot object
   A single integer passed to the Voronoi layout algorithm. The same seed yields the same polygon arrangement across runs.
 
 - **Colour control (`col_Cell_types`)**  
-  Accepts a named or unnamed character vector of colours for the Cell_types categories. If NULL, colours are automatically generated via `ArchR::paletteDiscrete()` (if ArchR is installed) or the standard ggplot2 hue palette. A message is printed when falling back to the default palette.
-  
-  *Note: ArchR can be installed from GitHub with `devtools::install_github("GreenleafLab/ArchR")`.*
+  Accepts a named or unnamed character vector of colours for the `Cell_types` categories. If `NULL`, colours are automatically generated via the internal `paletteDiscrete()` function (replicates the ArchR *stallion* palette). No external ArchR installation is needed.
 
 - **Label appearance**  
   `label_size` controls the text size inside polygons (default `3`).  
@@ -686,6 +690,41 @@ res$plot              # the ggplot object
 - **Dependencies**  
   Requires the `WeightedTreemaps` package, available from GitHub. If not installed, an error is thrown with installation instructions.  
   The function only uses `WeightedTreemaps::voronoiTreemap()` to compute polygon layouts; all rendering is done with `ggplot2`.
+
+</details>
+
+### 5.5 Built‑in Colour Palettes
+
+SlimR provides an internal function `paletteDiscrete()` that reproduces the colour palettes from the **ArchR** package.  
+These palettes, including the default *stallion*, are hard‑coded in the package and do **not** require an external ArchR installation.
+
+**Usage**  
+You can call the palette generator directly:
+
+```r
+# Generate colours for a set of categories
+cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"))
+print(cols)
+
+# Custom set (e.g., "kelly")
+cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"), set = "kelly")
+```
+
+The function returns a named vector of hex colours, sorted naturally (e.g., “NK cells” before “T cells”). When the number of categories exceeds the palette size, colours are interpolated smoothly.
+
+All SlimR plotting functions that accept `col_...` parameters automatically use this palette when no custom colours are supplied, ensuring a consistent and publication‑ready colour scheme across different types of plots.
+
+<details>
+<summary><b>Attribution</b></summary>
+
+The palettes are derived from ArchR, a scalable software package for integrative single‑cell chromatin accessibility analysis:
+
+- Granja JM, Corces MR et al. (2021) **ArchR is a scalable software package for integrative single‑cell chromatin accessibility analysis**. *Nature Genetics* **53**, 403–411. doi:10.1038/s41588-021-00790-6
+- Project website: [http://www.archrproject.com/](http://www.archrproject.com/)
+- GitHub repository: [https://github.com/GreenleafLab/ArchR](https://github.com/GreenleafLab/ArchR)
+
+**License**  
+ArchR is distributed under the **MIT License**. SlimR respects the original license by including the palette data directly and documenting its provenance.
 
 </details>
 

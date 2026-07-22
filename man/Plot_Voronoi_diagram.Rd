@@ -43,7 +43,8 @@ or \code{"none"}. Default is \code{"both"}.}
 Default is \code{1}.}
 
 \item{col_Cell_types}{Optional named or unnamed character vector of colours
-for the \code{Cell_types} categories.}
+for the \code{Cell_types} categories. If provided, it overrides the
+default ArchR-derived palette.}
 
 \item{label_size}{Numeric value controlling the size of the polygon labels.
 Default is \code{3}.}
@@ -81,7 +82,8 @@ Creates a weighted Voronoi treemap displaying the hierarchical composition
 of single-cell data. The area of each polygon is proportional to the
 number of cells in the corresponding sub-type, and the polygons are
 grouped by the main cell type. Each sub-type is filled with a distinct
-colour matching the ArchR or custom palette.
+colour from the \strong{ArchR}-inspired \emph{stallion} palette (or a user-supplied
+custom palette).
 
 \strong{Note on colour handling:}
 The function uses \code{WeightedTreemaps::voronoiTreemap()} to compute polygon
@@ -96,15 +98,18 @@ The custom drawing code extracts polygon vertices and uses
 cell type receives exactly its intended colour regardless of internal
 cell order.
 }
-\section{Installation of ArchR}{
+\section{Colour palette}{
 
-ArchR is not available on CRAN or Bioconductor. It can be installed from GitHub using:
-\preformatted{
-if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-devtools::install_github("GreenleafLab/ArchR", ref = "master",
-                         repos = BiocManager::repositories())
-}
+The default colour palette is derived from the \strong{ArchR} package
+(\href{http://www.archrproject.com/}{ArchR project site},
+\href{https://github.com/GreenleafLab/ArchR}{GitHub}).
+If no custom palette is supplied, the function calls the internal
+\code{paletteDiscrete()} function, which replicates the \emph{stallion} palette
+from ArchR. When the number of categories exceeds the palette size,
+colours are interpolated. ArchR is described in:
+Granja JM, Corces MR et al. ArchR is a scalable software package for
+integrative single-cell chromatin accessibility analysis.
+\emph{Nature Genetics}, 2021.
 }
 
 \examples{
@@ -151,6 +156,7 @@ Other Section_5_Other_Functions_Provided:
 \code{\link[=Celltype_annotation_PanglaoDB]{Celltype_annotation_PanglaoDB()}},
 \code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}},
 \code{\link[=Compute_Gene_AUC_ROC]{Compute_Gene_AUC_ROC()}},
-\code{\link[=Plot_Hierarchy_Proportion]{Plot_Hierarchy_Proportion()}}
+\code{\link[=Plot_Hierarchy_Proportion]{Plot_Hierarchy_Proportion()}},
+\code{\link[=paletteDiscrete]{paletteDiscrete()}}
 }
 \concept{Section_5_Other_Functions_Provided}

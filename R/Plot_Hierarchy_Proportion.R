@@ -10,19 +10,17 @@
 #' of label length; the heatmap sits tightly beneath the labels.
 #'
 #' Colours can be supplied for each annotation level.  When colours are
-#' missing, the function tries to obtain a perceptually uniform palette via
-#' \code{ArchR::paletteDiscrete()} (see \strong{Installation of ArchR} below); 
-#' if\pkg{ArchR} is unavailable, it falls back to the default \pkg{ggplot2} 
-#' hue palette and prints an informative message.
-#' 
-#' @section Installation of ArchR:
-#' ArchR is not available on CRAN or Bioconductor. It can be installed from GitHub using:
-#' \preformatted{
-#' if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-#' if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-#' devtools::install_github("GreenleafLab/ArchR", ref = "master",
-#'                          repos = BiocManager::repositories())
-#' }
+#' missing, the function obtains a perceptually uniform palette via the
+#' built‑in \code{paletteDiscrete()} function, which reproduces the
+#' **Stallion** (and other) palettes from the **ArchR** package.
+#' (\url{http://www.archrproject.com/}; Granja *et al.*, 2021).
+#'
+#' @references
+#' Granja JM, Corces MR et al. ArchR is a scalable software package for
+#' integrative single-cell chromatin accessibility analysis.
+#' *Nature Genetics*, 2021.
+#' \url{https://doi.org/10.1038/s41588-021-00790-6}
+#' \url{https://github.com/GreenleafLab/ArchR}
 #'
 #' @param seurat_obj A Seurat object.
 #' @param Main_cell_types Character string naming a column in
@@ -314,6 +312,7 @@ Plot_Hierarchy_Proportion <- function(
     if (!is.null(names)) setNames(cols, names) else cols
   }
 
+  # Use the built-in paletteDiscrete (replaces ArchR::paletteDiscrete)
   get_palette <- function(cats, user_cols) {
     if (!is.null(user_cols)) {
       if (!is.null(names(user_cols))) {
@@ -333,18 +332,15 @@ Plot_Hierarchy_Proportion <- function(
       }
     }
     
-    if (requireNamespace("ArchR", quietly = TRUE)) {
-      cols <- tryCatch(
-        ArchR::paletteDiscrete(values = cats),
-        error = function(e) NULL
-      )
-      
-      if (!is.null(cols)) {
-        if (!is.null(names(cols))) {
-          return(cols[cats])
-        } else {
-          return(setNames(cols[seq_along(cats)], cats))
-        }
+    cols <- tryCatch(
+      paletteDiscrete(values = cats),
+      error = function(e) NULL
+    )
+    if (!is.null(cols)) {
+      if (!is.null(names(cols))) {
+        return(cols[cats])
+      } else {
+        return(setNames(cols[seq_along(cats)], cats))
       }
     }
     

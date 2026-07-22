@@ -5,7 +5,8 @@
 #' of single-cell data. The area of each polygon is proportional to the
 #' number of cells in the corresponding sub-type, and the polygons are
 #' grouped by the main cell type. Each sub-type is filled with a distinct
-#' colour matching the ArchR or custom palette.
+#' colour from the **ArchR**-inspired *stallion* palette (or a user-supplied
+#' custom palette).
 #'
 #' **Note on colour handling:**  
 #' The function uses `WeightedTreemaps::voronoiTreemap()` to compute polygon
@@ -20,15 +21,18 @@
 #' cell type receives exactly its intended colour regardless of internal
 #' cell order.
 #'
-#' @section Installation of ArchR:
-#' ArchR is not available on CRAN or Bioconductor. It can be installed from GitHub using:
-#' \preformatted{
-#' if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-#' if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
-#' devtools::install_github("GreenleafLab/ArchR", ref = "master",
-#'                          repos = BiocManager::repositories())
-#' }
-#' 
+#' @section Colour palette:
+#' The default colour palette is derived from the **ArchR** package
+#' (\href{http://www.archrproject.com/}{ArchR project site},
+#' \href{https://github.com/GreenleafLab/ArchR}{GitHub}).
+#' If no custom palette is supplied, the function calls the internal
+#' `paletteDiscrete()` function, which replicates the *stallion* palette
+#' from ArchR. When the number of categories exceeds the palette size,
+#' colours are interpolated. ArchR is described in:
+#' Granja JM, Corces MR et al. ArchR is a scalable software package for
+#' integrative single-cell chromatin accessibility analysis.
+#' *Nature Genetics*, 2021.
+#'
 #' @param seurat_obj A Seurat object.
 #' @param Main_cell_types Character string naming a column in
 #'   \code{seurat_obj@meta.data} that holds the top-level (main) cell-type labels.
@@ -42,7 +46,8 @@
 #' @param seed Integer seed for reproducibility of the Voronoi layout.
 #'   Default is \code{1}.
 #' @param col_Cell_types Optional named or unnamed character vector of colours
-#'   for the \code{Cell_types} categories.
+#'   for the \code{Cell_types} categories. If provided, it overrides the
+#'   default ArchR-derived palette.
 #' @param label_size Numeric value controlling the size of the polygon labels.
 #'   Default is \code{3}.
 #' @param label_color Colour of the polygon labels. Default is \code{"black"}.
@@ -217,17 +222,7 @@ Plot_Voronoi_diagram <- function(
       }
     }
 
-    if (requireNamespace("ArchR", quietly = TRUE)) {
-      cols <- tryCatch(ArchR::paletteDiscrete(values = cats), error = function(e) NULL)
-      if (!is.null(cols)) {
-        if (!is.null(names(cols))) {
-          return(cols[cats])
-        } else {
-          return(setNames(cols[seq_along(cats)], cats))
-        }
-      }
-    }
-    default_pal(length(cats), cats)
+    paletteDiscrete(cats)
   }
 
   pal_full <- get_palette(full_cell_cats, col_Cell_types)
