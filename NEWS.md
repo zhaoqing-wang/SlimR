@@ -1,15 +1,14 @@
 ## Version 1.1.7 (2026-07-22)
 
 *   **New Features**
-    *   `Plot_Hierarchy_Proportion()` creates a composite figure with a hierarchical cell‑type tree (bubbles and trapezoids) and an optional group proportion heatmap, handling partial sub‑type annotations and providing built‑in ArchR‑derived colour palettes.
+    *   `Plot_Hierarchy_Proportion()` creates a composite figure with a hierarchical cell‑type tree (bubbles and trapezoids) and an optional group proportion heatmap, handling partial sub‑type annotations and providing ArchR‑based or fallback colour palettes.
     *   `Plot_Voronoi_diagram()` generates a weighted Voronoi treemap of hierarchical cell‑type composition, with polygon area proportional to cell count and sub‑type colours matching the same palette logic as `Plot_Hierarchy_Proportion`.
-    *   Added internal `paletteDiscrete()` function and `ArchRPalettes` dataset that faithfully reproduce the colour palettes (stallion, calm, kelly, etc.) from the **ArchR** package.  This removes the need for the external ArchR package while preserving the same visual aesthetics.  The function supports natural sorting of category names, automatic interpolation when the number of categories exceeds the palette size, and reversal of colour order.
+    *   Added internal `paletteDiscrete()` function and `ArchRPalettes` dataset that faithfully reproduce the colour palettes (stallion, calm, kelly, etc.) from the ArchR package. The function supports natural sorting of category names, automatic interpolation when the number of categories exceeds the palette size, and reversal of colour order.
 
 *   **Improvements**
-    *   Removed the **ArchR** package from `Suggests`; SlimR is now fully self‑contained regarding colour palette generation, which satisfies CRAN’s policies for non‑mainstream repositories and simplifies installation for users.
-    *   Documentation updates:
-        - Added **Section 5.5** (“Built‑in ArchR‑Derived Colour Palettes”) that describes the palette origin, includes full bibliographic citation (Granja *et al.*, *Nature Genetics* 2021), links to the project website and GitHub repository, and acknowledges the MIT license under which ArchR is distributed.
-        - Sections **5.3** and **5.4** have been revised to reflect that colours now come from the built‑in palettes rather than requiring ArchR to be installed.
+    *   Added Section 5.3 demonstrating the new `Plot_Hierarchy_Proportion` function for hierarchical cell type visualisation.
+    *   Added Section 5.4 showcasing `Plot_Voronoi_diagram` with a detailed parameter guide and example code.
+    *   Added Section 5.5 (“Built‑in ArchR‑Derived Colour Palettes”) that describes the palette origin, includes full bibliographic citation (Granja *et al.*, *Nature Genetics* 2021), links to the project website and GitHub repository, and acknowledges the MIT license under which ArchR is distributed.
     *   Various minor bug fixes and internal code clean‑up.
     
 ## Version 1.1.6 (2026-06-30)

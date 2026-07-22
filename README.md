@@ -720,7 +720,7 @@ All SlimR plotting functions that accept `col_...` parameters automatically use 
 The palettes are derived from ArchR, a scalable software package for integrative single‑cell chromatin accessibility analysis:
 
 - Granja JM, Corces MR et al. (2021) **ArchR is a scalable software package for integrative single‑cell chromatin accessibility analysis**. *Nature Genetics* **53**, 403–411. doi:10.1038/s41588-021-00790-6
-- Project website: [http://www.archrproject.com/](http://www.archrproject.com/)
+- Project website: [https://www.archrproject.com/](https://www.archrproject.com/)
 - GitHub repository: [https://github.com/GreenleafLab/ArchR](https://github.com/GreenleafLab/ArchR)
 
 **License**  

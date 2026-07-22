@@ -101,7 +101,7 @@ cell order.
 \section{Colour palette}{
 
 The default colour palette is derived from the \strong{ArchR} package
-(\href{http://www.archrproject.com/}{ArchR project site},
+(\href{https://www.archrproject.com/}{ArchR project site},
 \href{https://github.com/GreenleafLab/ArchR}{GitHub}).
 If no custom palette is supplied, the function calls the internal
 \code{paletteDiscrete()} function, which replicates the \emph{stallion} palette
@@ -109,7 +109,7 @@ from ArchR. When the number of categories exceeds the palette size,
 colours are interpolated. ArchR is described in:
 Granja JM, Corces MR et al. ArchR is a scalable software package for
 integrative single-cell chromatin accessibility analysis.
-\emph{Nature Genetics}, 2021.
+\emph{Nature Genetics}, 2021. \doi{10.1038/s41588-021-00790-6}
 }
 
 \examples{

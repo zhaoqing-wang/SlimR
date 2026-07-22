@@ -47,9 +47,9 @@ Available palettes include \code{"stallion"}, \code{"stallion2"},
 \references{
 Granja JM, Corces MR et al. ArchR is a scalable software package for
 integrative single-cell chromatin accessibility analysis.
-\emph{Nature Genetics} (2021).  \url{https://doi.org/10.1038/s41588-021-00790-6}
+\emph{Nature Genetics} (2021).  \doi{10.1038/s41588-021-00790-6}
 
-\url{http://www.archrproject.com/}
+\url{https://www.archrproject.com/}
 
 \url{https://github.com/GreenleafLab/ArchR}
 }

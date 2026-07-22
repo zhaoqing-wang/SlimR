@@ -13,12 +13,12 @@
 #' missing, the function obtains a perceptually uniform palette via the
 #' built‑in \code{paletteDiscrete()} function, which reproduces the
 #' **Stallion** (and other) palettes from the **ArchR** package.
-#' (\url{http://www.archrproject.com/}; Granja *et al.*, 2021).
+#' (\url{https://www.archrproject.com/}; Granja *et al.*, 2021).
 #'
 #' @references
 #' Granja JM, Corces MR et al. ArchR is a scalable software package for
 #' integrative single-cell chromatin accessibility analysis.
-#' *Nature Genetics*, 2021.
+#' *Nature Genetics*, 2021. \doi{10.1038/s41588-021-00790-6}
 #' \url{https://doi.org/10.1038/s41588-021-00790-6}
 #' \url{https://github.com/GreenleafLab/ArchR}
 #'
