@@ -559,13 +559,6 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 </details>
 
-以下是优化后的 README 5.3、5.4 节以及新增的 5.5 节。主要改动：
-
-- 5.3 和 5.4 中关于颜色的描述改为：调色板源自 ArchR，但已内置于 SlimR，无需额外安装 ArchR。
-- 删除了原有的 ArchR 安装指引，仅保留说明颜色源自 ArchR 的内置调色板。
-- 新增 5.5 节 `paletteDiscrete`，详细介绍内置调色板，注明文献引用、官网、GitHub、MIT 许可证，并给出简单示例。
-
-```markdown
 ### 5.3 Hierarchical Proportion Plot
 
 Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
