@@ -688,22 +688,26 @@ res$plot              # the ggplot object
 
 ### 5.5 Built‑in Colour Palettes
 
-SlimR provides an internal function `paletteDiscrete()` that reproduces the colour palettes from the **ArchR** package.  
-These palettes, including the default *stallion*, are hard‑coded in the package and do **not** require an external ArchR installation.
+Since *ArchR* is not available on CRAN, SlimR incorporates its colour palettes directly (via the internal function `paletteDiscrete()`) so that users can enjoy the same publication‑quality colours without any additional installation. The palettes, including the default stallion, are hard‑coded in the package and require no external dependencies.
 
-**Usage**  
 You can call the palette generator directly:
-
 ```r
-# Generate colours for a set of categories
-cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"))
-print(cols)
+# Display "orig.ident" using the built-in palette
+col.clr <- SlimR::paletteDiscrete(values = c(names(table(sce$orig.ident))))
+DimPlot(sce,
+  reduction = "umap",
+  group.by = "orig.ident",
+  cols = col.clr,label = TRUE) + NoAxes()
 
-# Custom set (e.g., "kelly")
-cols <- paletteDiscrete(c("B cells", "T cells", "NK cells"), set = "kelly")
+# Display "cell_type" using the built-in palette
+col.clr <- SlimR::paletteDiscrete(levels(sce$cell_type))
+DimPlot(sce,
+  reduction = "umap",
+  group.by = "cell_type",
+  cols = col.clr,label = TRUE) + NoAxes()
 ```
 
-The function returns a named vector of hex colours, sorted naturally (e.g., “NK cells” before “T cells”). When the number of categories exceeds the palette size, colours are interpolated smoothly.
+The function returns a named vector of hex colours, arranged horizontally according to the input vector. When the number of categories exceeds the palette size, colours are interpolated smoothly.
 
 All SlimR plotting functions that accept `col_...` parameters automatically use this palette when no custom colours are supplied, ensuring a consistent and publication‑ready colour scheme across different types of plots.
 
