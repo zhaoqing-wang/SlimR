@@ -14,6 +14,7 @@ Plot_Hierarchy_Proportion(
   col_Sub_cell_types = NULL,
   proportion = TRUE,
   Groups = NULL,
+  adjust_by_group = FALSE,
   show_labels = TRUE,
   low_col = "white",
   high_col = "navy"
@@ -48,6 +49,17 @@ tree with labels is returned.}
 \item{Groups}{Character string naming a \code{meta.data} column that
 defines sample groups for the proportion heatmap.  Required when
 \code{proportion = TRUE}.}
+
+\item{adjust_by_group}{Logical scalar.  If \code{FALSE} (default), each
+row of the heatmap shows the proportion of each terminal cell type
+within the corresponding group (row‑wise percentage).  Set to \code{TRUE}
+when displaying sub‑types derived from a larger, unevenly distributed
+population (e.g., immune subsets isolated from different conditions
+where total immune cell numbers differ).  In that case, the row‑wise
+proportion is multiplied by the ratio of the group’s total cell count
+to the mean group cell count, highlighting both within‑group composition
+and between‑group abundance differences.  The colour scale is then
+normalised across all cells and groups.}
 
 \item{show_labels}{Logical scalar. If \code{TRUE} (the default), text
 labels are placed next to the non‑leaf Main and Cell level nodes.}

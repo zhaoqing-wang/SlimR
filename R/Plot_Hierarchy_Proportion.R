@@ -41,6 +41,16 @@
 #' @param Groups Character string naming a \code{meta.data} column that
 #'   defines sample groups for the proportion heatmap.  Required when
 #'   \code{proportion = TRUE}.
+#' @param adjust_by_group Logical scalar.  If \code{FALSE} (default), each
+#'   row of the heatmap shows the proportion of each terminal cell type
+#'   within the corresponding group (row‑wise percentage).  Set to \code{TRUE}
+#'   when displaying sub‑types derived from a larger, unevenly distributed
+#'   population (e.g., immune subsets isolated from different conditions
+#'   where total immune cell numbers differ).  In that case, the row‑wise
+#'   proportion is multiplied by the ratio of the group’s total cell count
+#'   to the mean group cell count, highlighting both within‑group composition
+#'   and between‑group abundance differences.  The colour scale is then
+#'   normalised across all cells and groups.
 #' @param show_labels Logical scalar. If \code{TRUE} (the default), text
 #'   labels are placed next to the non‑leaf Main and Cell level nodes.
 #' @param low_col Character string for the lowest proportion colour in the
@@ -107,6 +117,7 @@ Plot_Hierarchy_Proportion <- function(
     col_Sub_cell_types = NULL,
     proportion = TRUE,
     Groups = NULL,
+    adjust_by_group = FALSE,
     show_labels = TRUE,
     low_col = "white",
     high_col = "navy"
@@ -120,6 +131,7 @@ Plot_Hierarchy_Proportion <- function(
   }
   stopifnot(is.logical(proportion), length(proportion) == 1L)
   stopifnot(is.logical(show_labels), length(show_labels) == 1L)
+  stopifnot(is.logical(adjust_by_group), length(adjust_by_group) == 1L)
 
   has_Cell <- !is.null(Cell_types)
   if (has_Cell) {
@@ -477,12 +489,31 @@ Plot_Hierarchy_Proportion <- function(
       list(Group = grp_vec, End = factor(leaf_id_sub, levels = leaf_ids_ordered)),
       FUN = length
     )
+    # Basic row-wise proportion
     tab$Proportion <- stats::ave(tab$Freq, tab$Group, FUN = function(x) x / sum(x))
-    tab$x_num <- as.numeric(tab$End)
 
+    # Group ordering
     group_levels <- get_ordered_cats(meta[[Groups]])
     tab$y_num <- as.numeric(factor(tab$Group, levels = group_levels))
     n_groups <- length(group_levels)
+
+    # Calculate group sizes for labeling and optional correction
+    group_sizes <- tab$Freq |> tapply(tab$Group, sum)
+    group_sizes <- group_sizes[group_levels]  # ensure order
+
+    # Adjust by group size if requested
+    if (adjust_by_group) {
+      mean_size <- mean(group_sizes, na.rm = TRUE)
+      if (mean_size == 0) mean_size <- 1  # prevent division by zero
+      size_factor <- group_sizes / mean_size
+      # Apply factor to each row based on its group
+      tab$Proportion <- tab$Proportion * size_factor[tab$Group]
+    }
+
+    tab$x_num <- as.numeric(tab$End)
+
+    # Build group labels with cell counts
+    group_labels <- paste0(group_levels, " (", group_sizes, ")")
 
     border_df <- data.frame(
       xmin = 0.5, xmax = N_leaves + 0.5,
@@ -520,12 +551,12 @@ Plot_Hierarchy_Proportion <- function(
         low = low_col, high = high_col,
         limits = c(min_prop, max_prop),
         breaks = prop_breaks,
-        name = "Proportion"
+        name = if (adjust_by_group) "Adjusted Proportion" else "Proportion"
       ) +
       ggplot2::scale_x_continuous(expand = c(0, 0)) +
       ggplot2::scale_y_continuous(
         breaks = seq_len(n_groups),
-        labels = group_levels,
+        labels = group_labels,
         expand = c(0, 0)
       ) +
       ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(0.5, n_groups + 0.7), clip = "off") +

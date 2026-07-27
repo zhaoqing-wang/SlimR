@@ -565,7 +565,7 @@ Create a publication‑ready composite figure that visualises the hierarchical c
 The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent‑child links shown as three‑segment step lines). The **lower panel** (optional) displays per‑group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
 
 ```r
-# Full three-level hierarchy with proportion heatmap
+# Full three-level hierarchy with proportion heatmap (default: row‑wise proportions)
 res <- Plot_Hierarchy_Proportion(
   seurat_obj        = sce,
   Main_cell_types   = "Main_type",
@@ -575,6 +575,18 @@ res <- Plot_Hierarchy_Proportion(
   Groups            = "orig.ident",
   low_col           = "white",
   high_col          = "navy"
+)
+
+# When plotting sub‑types of a larger population (e.g., immune subsets)
+# where total group sizes differ, use adjust_by_group = TRUE
+res <- Plot_Hierarchy_Proportion(
+  seurat_obj        = sce,
+  Main_cell_types   = "Immune_Main_type",
+  Cell_types        = "Immune_Cell_type",
+  Sub_cell_types    = "Immune_Sub_type",
+  proportion        = TRUE,
+  Groups            = "condition",
+  adjust_by_group   = TRUE
 )
 
 # Access individual plot components
@@ -602,7 +614,10 @@ res$combined_plot    # combined plot (requires patchwork)
 
 - **Proportion heatmap**  
   `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
-  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis.
+  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis, and, if available, the number of cells in each group is appended (e.g. “Control (1254)”).  
+
+  - **Adjustment for unequal group sizes (`adjust_by_group`)**  
+    When analysing sub‑types derived from a larger population (e.g., immune subsets) and the total number of cells in each group differs substantially, set `adjust_by_group = TRUE`. This option multiplies the row‑wise proportion by the ratio of the group’s cell count to the mean group cell count. The resulting heatmap then reflects both within‑group composition and between‑group abundance differences. The colour scale is automatically normalised across all cells and groups. For broad cell type visualisation or when group sizes are balanced, keep the default `FALSE`.
 
 - **Non‑leaf annotations**  
   `show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
