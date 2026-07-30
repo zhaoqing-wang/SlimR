@@ -40,6 +40,8 @@
 #' \url{https://www.archrproject.com/}
 #'
 #' \url{https://github.com/GreenleafLab/ArchR}
+#' 
+#' @export
 #'
 #' @family Section_5_Other_Functions_Provided
 #' 
