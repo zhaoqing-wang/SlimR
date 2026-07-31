@@ -5,7 +5,7 @@
     *   New built‑in marker list `CellTypist`: pre‑computed markers for 399 cell types across 12 human organs, derived from the CellTypist organ atlas (Xu *et al.* 2023; Domínguez Conde *et al.* 2022). Markers were identified using the Scanpy workflow (Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0), ranked by log fold‑change, and cut to the top 100 genes per cell type. See `?CellTypist` and the package README for usage details.
 
 *   **Improvements**
-    *   Colour legend title adapts to “Adjusted Proportion” when the adjustment is active.
+    *   Colour legend title adapts to “Adjusted Proportion” when the adjustment is active in `Plot_Hierarchy_Proportion()`.
     *   Optimized and revised the roxygen2 comments for some functions.
     *   The `"Markers_list_scIBD"` dataset has been re‑calculated using the Scanpy `sc.tl.rank_genes_groups` function; its documentation and the README have been updated to reflect the new workflow.
     *   Fixed the issue where the `'paletteDiscrete'` function failed to be called due to the absence of the `'@export'` attribute.
