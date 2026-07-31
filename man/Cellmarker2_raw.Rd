@@ -23,6 +23,7 @@ cancer type, and cell type to generate a list of marker genes for specific cell 
 }
 \seealso{
 Other Section_0_Database:
+\code{\link{CellTypist}},
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_table}},
 \code{\link{Markers_list_PCTAM}},

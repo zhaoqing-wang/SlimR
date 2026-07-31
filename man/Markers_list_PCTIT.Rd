@@ -23,6 +23,7 @@ and the reference literature is: L. Zheng et al. (2021) \url{doi:10.1126/science
 }
 \seealso{
 Other Section_0_Database:
+\code{\link{CellTypist}},
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

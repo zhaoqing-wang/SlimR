@@ -32,6 +32,7 @@ a list of marker genes for specific cell types using
 }
 \seealso{
 Other Section_0_Database:
+\code{\link{CellTypist}},
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

@@ -1,13 +1,14 @@
-## Version dev (2026-07-29)
+## Version dev (2026-07-31)
 
 *   **New Features**
     *   `Plot_Hierarchy_Proportion()` now accepts `adjust_by_group = TRUE` to scale per‑group proportions by relative cell counts, highlighting both within‑group composition and between‑group abundance differences. Heatmap row labels now also include the total cell count per group.
+    *   New built‑in marker list `Markers_list_CellTypist`: pre‑computed markers for 399 cell types across 12 human organs, derived from the CellTypist organ atlas (Xu *et al.* 2023; Domínguez Conde *et al.* 2022). Markers were identified using the Scanpy workflow (Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0), ranked by log fold‑change, and cut to the top 100 genes per cell type. See `?Markers_list_CellTypist` and the package README for usage details.
 
 *   **Improvements**
     *   Colour legend title adapts to “Adjusted Proportion” when the adjustment is active.
     *   Optimized and revised the roxygen2 comments for some functions.
-    *   The "Markers_list_scIBD" dataset has been re-calculated using the `sc.tl.rank_genes_groups` function from the scanpy package.
-    *   Fixed the issue where the 'paletteDiscrete' function failed to be called due to the absence of the '@export' attribute.
+    *   The `"Markers_list_scIBD"` dataset has been re‑calculated using the Scanpy `sc.tl.rank_genes_groups` function; its documentation and the README have been updated to reflect the new workflow.
+    *   Fixed the issue where the `'paletteDiscrete'` function failed to be called due to the absence of the `'@export'` attribute.
 
 ## Version 1.1.7 (2026-07-22)
 

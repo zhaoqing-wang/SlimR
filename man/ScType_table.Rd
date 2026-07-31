@@ -23,6 +23,7 @@ exploring available tissue types and cell types before filtering.
 }
 \seealso{
 Other Section_0_Database:
+\code{\link{CellTypist}},
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

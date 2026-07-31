@@ -21,6 +21,7 @@ This dataset is used to filter and create a standardized marker list.'
 }
 \seealso{
 Other Section_0_Database:
+\code{\link{CellTypist}},
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Cellmarker2_table}},

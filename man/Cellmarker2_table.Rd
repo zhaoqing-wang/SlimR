@@ -22,6 +22,7 @@ This list is used to choose filters for creation of standardized marker list.
 }
 \seealso{
 Other Section_0_Database:
+\code{\link{CellTypist}},
 \code{\link{Cellmarker2}},
 \code{\link{Cellmarker2_raw}},
 \code{\link{Markers_list_PCTAM}},

@@ -17,14 +17,19 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [2.1 From Cellmarker2 Database](#21-from-cellmarker2-database)
     - [2.2 From PanglaoDB Database](#22-from-panglaodb-database)
     - [2.3 From ScType Database](#23-from-sctype-database)
-    - [2.4 From Seurat Objects](#24-from-seurat-objects)
-    - [2.5 From Excel Tables](#25-from-excel-tables)
-    - [2.6 Built-in Markers Lists](#26-built-in-markers-lists)
+    - [2.4 From CellTypist Organ Atlas](#24-from-celltypist-organ-atlas)
+    - [2.5 From Seurat Objects](#25-from-seurat-objects)
+    - [2.6 From Scanpy (Python) Objects](#26-from-scanpy-python-objects)
+    - [2.7 From Excel Tables](#27-from-excel-tables)
+    - [2.8 Built-in Markers Lists](#28-built-in-markers-lists)
 3. [Automated Annotation Workflow](#3-automated-annotation-workflow)
     - [3.1 Calculate Parameter](#31-calculate-parameter)
     - [3.2 Cluster-Based Annotation](#32-cluster-based-annotation)
     - [3.3 Per-Cell Annotation](#33-per-cell-annotation)
 4. [Semi-Automated Annotation Workflow](#4-semi-automated-annotation-workflow)
+    - [4.1 Annotation Heat Map](#41-annotation-heat-map)
+    - [4.2 Annotation Feature Plots](#42-annotation-feature-plots)
+    - [4.3 Annotation Combined Plots](#43-annotation-combined-plots)
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
@@ -156,6 +161,7 @@ Markers_list_ScType <- Markers_filter_ScType(
 )
 ```
 
+
 **Important: Specify `tissue_type` for accurate annotations.**
 
 <details>
@@ -168,7 +174,36 @@ View(ScType_table)
 
 </details>
 
-### 2.4 From Seurat Objects
+### 2.4 From CellTypist Organ Atlas
+
+**Reference:**  
+*Xu et al. (2023)* [doi:10.1016/j.cell.2023.11.026](https://doi.org/10.1016/j.cell.2023.11.026)  
+*Domínguez Conde et al. (2022)* [doi:10.1126/science.abl5197](https://doi.org/10.1126/science.abl5197)
+
+SlimR provides a pre‑computed marker list derived from the [CellTypist organ atlas](https://www.celltypist.org/organs).  
+It covers **12 human organs** (Blood, Bone_marrow, Heart, Hippocampus, Intestine, Kidney, Liver, Lung, Lymph_node, Pancreas, Skeletal_muscle, Spleen) and **399 cell types**, with markers obtained via the Scanpy workflow (log1p‑normalised data, Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0, then ranked by log fold‑change; **top 100 genes** per cell type). The data have been imported using `Read_excel_markers` and are directly usable.
+
+```r
+# Load the built-in list
+CellTypist <- SlimR::CellTypist
+
+# Access markers for one organ (e.g., Intestine)
+Markers_list_CellTypist <- CellTypist$Intestine
+
+# Each organ contains a named list of data frames (one per cell type)
+names(Markers_list_CellTypist)
+
+# The data frames are pre‑sorted by log fold‑change (descending).
+# To restrict to the top 20 markers for every cell type in this organ:
+Markers_list_CellTypist_top20 <- lapply(Markers_list_CellTypist, function(df) head(df, 20))
+```
+
+**Key points:**
+- Use `$organ_name` to extract an organ; the organ names are exactly as shown above (case‑sensitive).
+- Each cell‑type data frame is already ranked by `logfoldchanges` (descending) – simply use `head(df, n)` to obtain the top *n* markers.
+- The full list can be passed directly to SlimR’s annotation functions as a standard `Markers_list` object.
+
+### 2.5 From Seurat Objects
 
 ``` r
 seurat_markers <- Seurat::FindAllMarkers(
@@ -185,31 +220,83 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 
 *Tip: `sort_by = "FSS"` ranks by Feature Significance Score (log2FC × Expression ratio). Use `sort_by = "avg_log2FC"` for fold-change ranking.*
 
+### 2.6 From Scanpy (Python) Objects
+
+Differential expression results from a Scanpy AnnData object can be exported to an Excel file and then loaded directly into SlimR’s standard format using `Read_excel_markers`.
+
 <details>
-<summary><b>Use presto for ~10× faster marker detection</b></summary>
+<summary><b>Process Codes</b></summary>
 
-``` r
-seurat_markers <- dplyr::filter(
-    presto::wilcoxauc(
-      X = sce,
-      group_by = "Cell_type",
-      seurat_assay = "RNA"
-      ),
-    padj < 0.05, logFC > 0.5
-    )
+```python
+import scanpy as sc
+import pandas as pd
+import numpy as np
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
+import re
 
-Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
-    sources = "presto",
-    sort_by = "FSS",
-    gene_filter = 20
-    )
+# Load data
+adata = sc.read_h5ad("adata.h5ad")
+
+# ------------------------------------------------------------
+# Ensure expression data is log1p‑normalised.
+# If adata.X contains raw counts, normalise and log1p now:
+#   sc.pp.normalize_total(adata, target_sum=1e4)
+#   sc.pp.log1p(adata)
+#
+# If raw counts are in a layer (e.g., 'counts'), move them to .X first:
+#   adata.X = adata.layers['counts'].copy()
+#   sc.pp.normalize_total(adata, target_sum=1e4)
+#   sc.pp.log1p(adata)
+#
+# If .X already contains log1p data, you can skip the step above.
+# ------------------------------------------------------------
+
+# Cluster column (adjust to your metadata column name)
+cluster_key = "Curated_annotation"
+adata.obs[cluster_key] = adata.obs[cluster_key].astype("category")
+clusters = adata.obs[cluster_key].cat.categories
+
+# Wilcoxon test (one‑vs‑rest)
+sc.tl.rank_genes_groups(adata, groupby=cluster_key,
+                        method="wilcoxon", n_jobs=-1)
+
+# Collect filtered results per cluster
+de_dict = {}
+for clust in clusters:
+    df = sc.get.rank_genes_groups_df(adata, group=clust)
+    df = df[(df["pvals_adj"] < 0.01) & (df["logfoldchanges"] > 0)]
+    df = df.sort_values("logfoldchanges", ascending=False).head(100)
+    df = df.rename(columns={"names": "gene"})
+    # Round numeric columns for cleaner output
+    for col in df.select_dtypes(include=[np.number]).columns:
+        df[col] = df[col].round(4)
+    de_dict[clust] = df
+
+# Write to Excel (one sheet per cluster)
+def sanitize_sheet_name(name):
+    return re.sub(r'[\[\]:*?/\\]', '_', str(name))[:31]
+
+wb = Workbook()
+wb.remove(wb.active)
+for clust in clusters:
+    ws = wb.create_sheet(title=sanitize_sheet_name(clust))
+    for row in dataframe_to_rows(de_dict[clust], index=False, header=True):
+        ws.append(row)
+wb.save("DEGs.xlsx")
 ```
-
-*Install presto: `devtools::install_github('immunogenomics/presto')`*
 
 </details>
 
-### 2.5 From Excel Tables
+**Important:**  
+- Differential expression must be computed on **log1p‑normalised** data. If your `.X` still holds raw counts, normalise (e.g., `normalize_total` + `log1p`) before calling `rank_genes_groups`.  
+- Adapt `groupby` to your actual annotation column (e.g., `"Cell_type"`, `"leiden"`).  
+- You can adjust the significance threshold (`pvals_adj`), fold‑change direction, and number of genes (`head(100)`) to suit your analysis.
+
+After saving the `DEGs.xlsx` file, use the `Read_excel_markers` function from Section 2.7 to import it into R.
+
+
+### 2.7 From Excel Tables
 
 **Format:** Each sheet name = cell type, first row = headers, first column = markers, subsequent columns = metrics (optional).
 
@@ -219,7 +306,7 @@ Markers_list_Excel <- Read_excel_markers("D:/Laboratory/Marker_load.xlsx")
 
 *If your Excel file lacks column headers, set `has_colnames = FALSE`.*
 
-### 2.6 Built-in Markers Lists
+### 2.8 Built-in Markers Lists
 
 SlimR includes curated marker lists for specific annotation tasks:
 
@@ -232,7 +319,11 @@ SlimR includes curated marker lists for specific annotation tasks:
 
 ``` r
 # Example: Load built-in markers
-Markers_list <- SlimR::Markers_list_scIBD
+Markers_list_scIBD <- SlimR::Markers_list_scIBD
+
+# The data frames are pre‑sorted by log fold‑change (descending).
+# To restrict to the top 20 markers for every cell type in this organ:
+Markers_list_scIBD_top20 <- lapply(Markers_list_scIBD, function(df) head(df, 20))
 ```
 
 **Important: Ensure your input Seurat object matches the tissue/cell type scope of the selected marker list.**
@@ -357,6 +448,8 @@ Celltype_Verification(seurat_obj = sce,
 
 ### 3.3 Per-Cell Annotation
 
+**Please note: When performing cell-by-cell annotation, the annotation results based on cell resolution are subject to instability.**
+
 Three steps: **Calculate → Annotate → Verify**. Ideal for heterogeneous clusters, rare cell types, and continuous differentiation states.
 
 **Step 1: Calculate Per-Cell Types**
@@ -440,8 +533,7 @@ Celltype_Verification_PerCell(
 
 For expert-guided manual annotation using visualizations:
 
-<details>
-<summary><b>4.1 Annotation Heat Map</b></summary>
+### 4.1 Annotation Heat Map
 
 ``` r
 Celltype_Annotation_Heatmap(
@@ -458,10 +550,7 @@ Celltype_Annotation_Heatmap(
 
 *Note: This function is now incorporated into `Celltype_Calculate()`. Use `Celltype_Calculate()` instead for automated workflows.*
 
-</details>
-
-<details>
-<summary><b>4.2 Annotation Feature Plots</b></summary>
+### 4.2 Annotation Feature Plots
 
 Generates per-cell-type expression dot plot with metric heat map:
 
@@ -482,10 +571,7 @@ Celltype_Annotation_Features(
 
 *Set `gene_list_type` to `"Cellmarker2"`, `"PanglaoDB"`, `"Seurat"`, or `"Excel"` to match your marker source.*
 
-</details>
-
-<details>
-<summary><b>4.3 Annotation Combined Plots</b></summary>
+### 4.3 Annotation Combined Plots
 
 Generates per-cell-type box plots of marker expression levels:
 
@@ -501,8 +587,6 @@ Celltype_Annotation_Combined(
   colour_high = "navy"
 )
 ```
-
-</details>
 
 ---
 
