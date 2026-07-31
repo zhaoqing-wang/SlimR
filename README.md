@@ -98,6 +98,8 @@ SlimR uses a standardized list format: list names = cell types, first column = m
 
 **Reference:** *Hu et al. (2023) [doi:10.1093/nar/gkac947](https://doi.org/10.1093/nar/gkac947)*
 
+CellMarker 2.0 is a manually curated repository of experimentally supported markers across **human** and **mouse**, encompassing **26,915 markers**, **2,578 cell types**, and **656 tissues** (83,361 tissue–cell type–marker entries).  It also includes marker information from 48 sequencing technology sources (e.g., 10X Chromium, Smart‑Seq2, Drop‑seq) and 29 types of cell markers (protein‑coding genes, lncRNAs, processed pseudogenes, etc.). SlimR integrates the full dataset and provides flexible filtering to generate custom marker lists.
+
 ``` r
 Cellmarker2 <- SlimR::Cellmarker2
 
@@ -127,6 +129,8 @@ View(Cellmarker2_table)
 
 **Reference:** *Franzén et al. (2019) [doi:10.1093/database/baz046](https://doi.org/10.1093/database/baz046)*
 
+PanglaoDB is a public database of **>1,054 single‑cell experiments** (covering most major platforms) with **>4 million cells** from human and mouse tissues. It includes a community‑curated marker compendium of **>6,000 gene–cell‑type associations**. SlimR integrates this marker compendium, allowing filtering by species and organ.
+
 ``` r
 PanglaoDB <- SlimR::PanglaoDB
 
@@ -151,6 +155,8 @@ View(PanglaoDB_table)
 
 **Reference:** *Ianevski et al. (2022) [doi:10.1038/s41467-022-28803-w](https://doi.org/10.1038/s41467-022-28803-w)*
 
+ScType provides a comprehensive marker database organised by **tissue type** (e.g., Immune system, Brain) and **cell name**, enabling data‑driven annotation using positive and negative markers. SlimR includes the full ScType marker collection for automated cell‑type identification.
+
 ``` r
 ScType <- SlimR::ScType
 
@@ -160,7 +166,6 @@ Markers_list_ScType <- Markers_filter_ScType(
   cell_name = NULL
 )
 ```
-
 
 **Important: Specify `tissue_type` for accurate annotations.**
 
@@ -177,11 +182,10 @@ View(ScType_table)
 ### 2.4 From CellTypist Organ Atlas
 
 **Reference:**  
-*Xu et al. (2023)* [doi:10.1016/j.cell.2023.11.026](https://doi.org/10.1016/j.cell.2023.11.026)  
-*Domínguez Conde et al. (2022)* [doi:10.1126/science.abl5197](https://doi.org/10.1126/science.abl5197)
+*Xu et al. (2023) [doi:10.1016/j.cell.2023.11.026](https://doi.org/10.1016/j.cell.2023.11.026)*
+*Domínguez Conde et al. (2022) [doi:10.1126/science.abl5197](https://doi.org/10.1126/science.abl5197)*
 
-SlimR provides a pre‑computed marker list derived from the [CellTypist organ atlas](https://www.celltypist.org/organs).  
-It covers **12 human organs** (Blood, Bone_marrow, Heart, Hippocampus, Intestine, Kidney, Liver, Lung, Lymph_node, Pancreas, Skeletal_muscle, Spleen) and **399 cell types**, with markers obtained via the Scanpy workflow (log1p‑normalised data, Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0, then ranked by log fold‑change; **top 100 genes** per cell type). The data have been imported using `Read_excel_markers` and are directly usable.
+SlimR provides a pre‑computed marker list derived from the [CellTypist organ atlas](https://www.celltypist.org/organs). It covers **12 human organs** (Blood, Bone_marrow, Heart, Hippocampus, Intestine, Kidney, Liver, Lung, Lymph_node, Pancreas, Skeletal_muscle, Spleen) and **399 cell types**, with markers obtained via the Scanpy workflow (Section 2.6: log1p‑normalised data, Wilcoxon test, adjusted p‑value < 0.01, log2 fold‑change > 0, then ranked by log fold‑change; **top 100 genes** per cell type). The data have been imported using `Read_excel_markers` and are directly usable.
 
 ```r
 # Load the built-in list
