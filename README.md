@@ -220,6 +220,8 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 
 *Tip: `sort_by = "FSS"` ranks by Feature Significance Score (log2FC × Expression ratio). Use `sort_by = "avg_log2FC"` for fold-change ranking.*
 
+**Important: To avoid long running time, for data with more than 100,000 cells, it is recommended to use scanpy for DEGs calculation (Section 2.6).**
+
 ### 2.6 From Scanpy (Python) Objects
 
 Differential expression results from a Scanpy AnnData object can be exported to an Excel file and then loaded directly into SlimR’s standard format using `Read_excel_markers`.
