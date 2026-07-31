@@ -1,4 +1,4 @@
-## Version dev (2026-07-31)
+## Version 1.1.8 (2026-07-31)
 
 *   **New Features**
     *   `Plot_Hierarchy_Proportion()` now accepts `adjust_by_group = TRUE` to scale per‑group proportions by relative cell counts, highlighting both within‑group composition and between‑group abundance differences. Heatmap row labels now also include the total cell count per group.
