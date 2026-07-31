@@ -6,6 +6,7 @@
 *   **Improvements**
     *   Colour legend title adapts to “Adjusted Proportion” when the adjustment is active.
     *   Optimized and revised the roxygen2 comments for some functions.
+    *   The "Markers_list_scIBD" dataset has been re-calculated using the `sc.tl.rank_genes_groups` function from the scanpy package.
     *   Fixed the issue where the 'paletteDiscrete' function failed to be called due to the absence of the '@export' attribute.
 
 ## Version 1.1.7 (2026-07-22)
