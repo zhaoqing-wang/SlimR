@@ -1,3 +1,14 @@
+## Version dev (2026-08-09)
+
+*   **New Features**
+    *   New function `Plot_Group_Gene_Heatmap()`: Generates publication-quality group-level mean Z-score expression heatmaps across custom cell groups (e.g., cell types or samples). Supports seamless integration with Seurat v4 and v5 objects.
+    *   `Plot_Group_Gene_Heatmap()` includes an optional integrated row computed via `AUCell` (`add_aucell_row = TRUE`), displaying top-level group Z-scores for target pathways or cell-type marker sets alongside individual gene expression.
+
+*   **Improvements**
+    *   Integrated discrete color palette handling in `Plot_Group_Gene_Heatmap()` using SlimR's internal `paletteDiscrete()` function (derived from ArchR) for column and row annotation bars.
+    *   Fully namespace-qualified (`::`) all external dependency calls within `Plot_Group_Gene_Heatmap()` to avoid internal `NAMESPACE` conflict warnings during `devtools::document()` and `R CMD check`.
+    *   Optimized and revised the roxygen2 comments for some functions.
+
 ## Version 1.1.8 (2026-07-31)
 
 *   **New Features**

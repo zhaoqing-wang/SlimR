@@ -14,10 +14,8 @@
 #'
 #' @family Section_1_Functions_Use_in_Package
 #'
-#' @importFrom Seurat `%||%`
 #' @importFrom Seurat DefaultAssay DefaultAssay<- CellsByIdentities FetchData
 #' @importFrom dplyr group_by summarise left_join
-#'
 #'
 calculate_expression <- function(
     object,
@@ -31,7 +29,11 @@ calculate_expression <- function(
     stop("cluster_col not found in meta.data")
   }
 
-  assay <- assay %||% DefaultAssay(object)
+  if (is.null(assay)) {
+  assay <- DefaultAssay(object)
+  } else if (!(assay %in% names(object@assays))) {
+    stop(paste0("Assay not found in Seurat object: ", assay))
+  }
   DefaultAssay(object) <- assay
 
   cells <- unlist(CellsByIdentities(object = object, cells = colnames(object[[assay]])))

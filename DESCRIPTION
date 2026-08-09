@@ -24,7 +24,10 @@ Imports:
     tidyr,
     tools,
     tibble,
-    gtools
+    gtools,
+    AUCell,
+    RColorBrewer,
+    SeuratObject
 Suggests:
     crayon,
     RANN,
@@ -33,5 +36,5 @@ Suggests:
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-Date: 2026-07-31
-Config/roxygen2/version: 8.0.0
+Date: 2026-08-09
+Config/roxygen2/version: 8.1.0

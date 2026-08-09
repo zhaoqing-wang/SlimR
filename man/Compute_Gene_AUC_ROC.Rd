@@ -105,6 +105,7 @@ Other Section_5_Other_Functions_Provided:
 \code{\link[=Celltype_annotation_Excel]{Celltype_annotation_Excel()}},
 \code{\link[=Celltype_annotation_PanglaoDB]{Celltype_annotation_PanglaoDB()}},
 \code{\link[=Celltype_annotation_Seurat]{Celltype_annotation_Seurat()}},
+\code{\link[=Plot_Group_Gene_Heatmap]{Plot_Group_Gene_Heatmap()}},
 \code{\link[=Plot_Hierarchy_Proportion]{Plot_Hierarchy_Proportion()}},
 \code{\link[=Plot_Voronoi_diagram]{Plot_Voronoi_diagram()}},
 \code{\link[=paletteDiscrete]{paletteDiscrete()}}

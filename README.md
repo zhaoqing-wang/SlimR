@@ -35,7 +35,8 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
     - [5.3 Hierarchical Proportion Plot](#53-hierarchical-proportion-plot)
     - [5.4 Weighted Voronoi Plot](#54-weighted-voronoi-plot)
-    - [5.5 Built‑in Colour Palettes](#55-builtin-colour-palettes)
+    - [5.5 Grouped Gene Z-Score Heatmap](#55-grouped-gene-z-score-heatmap)
+    - [5.6 Built‑in Colour Palettes](#56-builtin-colour-palettes)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -810,7 +811,54 @@ res$plot              # the ggplot object
 
 </details>
 
-### 5.5 Built‑in Colour Palettes
+### 5.5 Grouped Gene Z-Score Heatmap
+
+Generate a mean Z-score expression heatmap across specified cell groups from a Seurat object using `pheatmap`. Optionally computes an integrated marker/pathway score per cell using `AUCell` and appends its group-level mean Z-score as a weighted top row. Colors are styled with a publication-ready blue-white-red gradient for heatmap values, while annotation bars seamlessly integrate with SlimR's internal discrete palettes (derived from ArchR).
+
+```r
+# Basic group-level Z-score heatmap without AUCell integrated row
+p <- Plot_Group_Gene_Heatmap(
+  seurat_obj     = sce,
+  features       = c("CD3D", "CD3E", "CD4", "CD8A"),
+  group_by       = "celltype",
+  add_aucell_row = FALSE
+)
+
+# Heatmap with an integrated pathway AUCell score on the top row
+p <- Plot_Group_Gene_Heatmap(
+  seurat_obj      = sce,
+  features        = c("TNF", "IL6", "NFKB1", "RELA"),
+  group_by        = "orig.ident",
+  add_aucell_row  = TRUE,
+  aucell_row_name = "NFkB_Pathway_AUC"
+)
+
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+* **Data & Feature Selection**
+`seurat_obj` accepts both Seurat v4 and v5 objects.
+`features` is a character vector of gene names to display. Missing features in the dataset are automatically omitted with a warning.
+`group_by` specifies a metadata column in `seurat_obj@meta.data` (e.g., `"celltype"`, `"orig.ident"`) to define group aggregations.
+* **Assay & Data Extraction (`assay`, `slot_or_layer`)**
+`assay` specifies which assay to pull expression values from (defaults to `Seurat::DefaultAssay()`).
+`slot_or_layer` defines the data layer (default `"data"`). 
+* **Integrated AUCell Row (`add_aucell_row`, `aucell_row_name`)**
+* `add_aucell_row = TRUE` (default) calculates cell-level enrichment scores across all specified `features` using `AUCell`. Group means of these AUC scores are Z-score normalized and displayed as the top row.
+* `aucell_row_name` specifies the row label for this top row (default `"Integrated_Score"`).
+* Set `add_aucell_row = FALSE` to render only individual gene Z-score rows.
+* **Clustering & Ordering (`cluster_rows`, `cluster_cols`)**
+Both `cluster_rows` and `cluster_cols` default to `FALSE` to strictly preserve the input gene list order and the original group order from `seurat_obj@meta.data`. Set to `TRUE` if hierarchical clustering dendrograms are desired.
+* **Colour & Aesthetics (`palette_set`, `scale_range`)**
+`palette_set` controls discrete annotation bar colors for cell groups via the internal `paletteDiscrete()` function (default `"stallion"`).
+Heatmap body values use a 11-color `RdBu` palette smoothly interpolated across custom breaks.
+`scale_range` defines the numeric bounds for Z-scores (default `c(-1.25, 1.25)`). Values exceeding these bounds are safely clamped to avoid blank cells.
+
+</details>
+
+### 5.6 Built‑in Colour Palettes
 
 Since *ArchR* is not available on CRAN, SlimR incorporates its colour palettes directly (via the internal function `paletteDiscrete()`) so that users can enjoy the same publication‑quality colours without any additional installation. The palettes, including the default stallion, are hard‑coded in the package and require no external dependencies.
 

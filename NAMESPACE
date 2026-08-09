@@ -20,99 +20,129 @@ export(Markers_filter_Cellmarker2)
 export(Markers_filter_PanglaoDB)
 export(Markers_filter_ScType)
 export(Parameter_Calculate)
+export(Plot_Group_Gene_Heatmap)
 export(Plot_Hierarchy_Proportion)
 export(Plot_Voronoi_diagram)
 export(Read_excel_markers)
 export(Read_seurat_markers)
 export(paletteDiscrete)
-importFrom(Seurat,"DefaultAssay<-")
-importFrom(Seurat,CellsByIdentities)
-importFrom(Seurat,DefaultAssay)
-importFrom(Seurat,DimPlot)
-importFrom(Seurat,DotPlot)
-importFrom(Seurat,Embeddings)
-importFrom(Seurat,FeaturePlot)
-importFrom(Seurat,FetchData)
-importFrom(Seurat,FindMarkers)
-importFrom(Seurat,GetAssayData)
-importFrom(Seurat,Idents)
-importFrom(Seurat,RenameIdents)
-importFrom(Seurat,`%||%`)
+importFrom(AUCell,
+  AUCell_buildRankings,
+  AUCell_calcAUC,
+  getAUC
+)
+importFrom(RColorBrewer,brewer.pal)
+importFrom(Seurat,
+  "DefaultAssay<-",
+  CellsByIdentities,
+  DefaultAssay,
+  DimPlot,
+  DotPlot,
+  Embeddings,
+  FeaturePlot,
+  FetchData,
+  FindMarkers,
+  GetAssayData,
+  Idents,
+  RenameIdents
+)
+importFrom(SeuratObject,
+  GetAssayData,
+  LayerData
+)
 importFrom(cowplot,plot_grid)
-importFrom(dplyr,"%>%")
-importFrom(dplyr,all_of)
-importFrom(dplyr,arrange)
-importFrom(dplyr,as_tibble)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,desc)
-importFrom(dplyr,distinct)
-importFrom(dplyr,group_by)
-importFrom(dplyr,left_join)
-importFrom(dplyr,pull)
-importFrom(dplyr,summarise)
-importFrom(dplyr,top_n)
-importFrom(ggplot2,.data)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,coord_cartesian)
-importFrom(ggplot2,coord_equal)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,element_line)
-importFrom(ggplot2,element_rect)
-importFrom(ggplot2,element_text)
-importFrom(ggplot2,expand_limits)
-importFrom(ggplot2,expansion)
-importFrom(ggplot2,geom_abline)
-importFrom(ggplot2,geom_boxplot)
-importFrom(ggplot2,geom_line)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_polygon)
-importFrom(ggplot2,geom_rect)
-importFrom(ggplot2,geom_segment)
-importFrom(ggplot2,geom_text)
-importFrom(ggplot2,geom_tile)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,ggsave)
-importFrom(ggplot2,ggtitle)
-importFrom(ggplot2,guide_legend)
-importFrom(ggplot2,guides)
-importFrom(ggplot2,labs)
-importFrom(ggplot2,margin)
-importFrom(ggplot2,position_dodge)
-importFrom(ggplot2,scale_color_gradient)
-importFrom(ggplot2,scale_color_gradientn)
-importFrom(ggplot2,scale_color_manual)
-importFrom(ggplot2,scale_fill_gradient)
-importFrom(ggplot2,scale_fill_manual)
-importFrom(ggplot2,scale_size_area)
-importFrom(ggplot2,scale_x_continuous)
-importFrom(ggplot2,scale_y_continuous)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_bw)
-importFrom(ggplot2,theme_minimal)
-importFrom(ggplot2,theme_void)
-importFrom(grDevices,chull)
-importFrom(grDevices,colorRampPalette)
-importFrom(grDevices,rainbow)
-importFrom(grid,grid.draw)
-importFrom(grid,grid.newpage)
+importFrom(dplyr,
+  "%>%",
+  all_of,
+  arrange,
+  as_tibble,
+  bind_rows,
+  desc,
+  distinct,
+  group_by,
+  left_join,
+  pull,
+  summarise,
+  top_n
+)
+importFrom(ggplot2,
+  .data,
+  aes,
+  coord_cartesian,
+  coord_equal,
+  element_blank,
+  element_line,
+  element_rect,
+  element_text,
+  expand_limits,
+  expansion,
+  geom_abline,
+  geom_boxplot,
+  geom_line,
+  geom_point,
+  geom_polygon,
+  geom_rect,
+  geom_segment,
+  geom_text,
+  geom_tile,
+  ggplot,
+  ggsave,
+  ggtitle,
+  guide_legend,
+  guides,
+  labs,
+  margin,
+  position_dodge,
+  scale_color_gradient,
+  scale_color_gradientn,
+  scale_color_manual,
+  scale_fill_gradient,
+  scale_fill_manual,
+  scale_size_area,
+  scale_x_continuous,
+  scale_y_continuous,
+  theme,
+  theme_bw,
+  theme_minimal,
+  theme_void
+)
+importFrom(grDevices,
+  chull,
+  colorRampPalette,
+  rainbow
+)
+importFrom(grid,
+  grid.draw,
+  grid.newpage
+)
 importFrom(gtools,mixedsort)
+importFrom(methods,slot)
 importFrom(patchwork,wrap_plots)
+importFrom(pheatmap,pheatmap)
 importFrom(readxl,excel_sheets)
-importFrom(scales,hue_pal)
-importFrom(scales,number_format)
-importFrom(scales,rescale)
-importFrom(stats,aggregate)
-importFrom(stats,ave)
-importFrom(stats,dist)
-importFrom(stats,median)
-importFrom(stats,pnorm)
-importFrom(stats,quantile)
-importFrom(stats,runif)
-importFrom(stats,sd)
-importFrom(stats,setNames)
-importFrom(stats,var)
-importFrom(stats,weighted.mean)
-importFrom(tools,file_ext)
-importFrom(tools,file_path_sans_ext)
-importFrom(utils,head)
-importFrom(utils,tail)
+importFrom(scales,
+  hue_pal,
+  number_format,
+  rescale
+)
+importFrom(stats,
+  aggregate,
+  ave,
+  dist,
+  median,
+  pnorm,
+  quantile,
+  runif,
+  sd,
+  setNames,
+  var,
+  weighted.mean
+)
+importFrom(tools,
+  file_ext,
+  file_path_sans_ext
+)
+importFrom(utils,
+  head,
+  tail
+)
