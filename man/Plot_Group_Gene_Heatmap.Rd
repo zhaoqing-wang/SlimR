@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plot_Group_Gene_Heatmap.R
 \name{Plot_Group_Gene_Heatmap}
 \alias{Plot_Group_Gene_Heatmap}
-\title{Plot Grouped Gene Z-Score Heatmap with Optional AUCell Integrated Row}
+\title{Plot Grouped Gene Z-Score Heatmap with Optional Integrated Score Row}
 \usage{
 Plot_Group_Gene_Heatmap(
   seurat_obj,
@@ -16,6 +16,7 @@ Plot_Group_Gene_Heatmap(
   cluster_cols = FALSE,
   palette_set = "stallion",
   scale_range = c(-1.25, 1.25),
+  annotation_legend = FALSE,
   cellwidth = 18,
   cellheight = 18,
   main = "Group Gene Heatmap Plot | SlimR"
@@ -37,10 +38,10 @@ If \code{NULL}, uses \code{Seurat::DefaultAssay(seurat_obj)}.}
 Default is \code{"data"}.}
 
 \item{add_aucell_row}{Logical. If \code{TRUE} (default), computes an integrated
-expression score across \code{features} per cell using \pkg{AUCell} and
-appends its group mean as the top row of the heatmap.}
+mean expression signature across \code{features} per cell and appends its
+group-level mean Z-score as the top row of the heatmap.}
 
-\item{aucell_row_name}{Character string naming the top integrated AUCell row
+\item{aucell_row_name}{Character string naming the top integrated row
 when \code{add_aucell_row = TRUE}. Default is \code{"Integrated_Score"}.}
 
 \item{cluster_rows}{Logical. Whether to perform hierarchical clustering on
@@ -55,6 +56,9 @@ for group/type annotation bars (e.g., \code{"stallion"}, \code{"bear"},
 
 \item{scale_range}{Numeric vector of length 2 defining the minimum and
 maximum limits for the heatmap break range. Default is \code{c(-1.25, 1.25)}.}
+
+\item{annotation_legend}{Logical. Whether to show legends for the column and row
+annotations (e.g., Group and Feature Type color bars). Default is \code{FALSE}.}
 
 \item{cellwidth}{Numeric. Width of individual heatmap cells in points.
 Set to make cells square. Default is \code{18}.}
@@ -71,9 +75,10 @@ A \pkg{pheatmap} object invisibly.
 \description{
 Generates a publication-quality mean Z-score expression heatmap across cell
 groups from a Seurat object using \pkg{pheatmap}. Optionally computes and
-adds a top row representing the integrated pathway/marker expression score
-calculated via \pkg{AUCell}. Row annotations distinguish individual gene
-expression rows from the optional AUCell weighted row. Column annotations
+appends a top row representing the integrated pathway or marker signature
+score (mean gene expression across target features per cell) before group
+mean calculation and Z-score scaling. Row annotations distinguish individual gene
+expression rows from the optional integrated weighted row. Column annotations
 and row annotations are automatically styled using SlimR's internal discrete
 palettes.
 }
@@ -86,7 +91,7 @@ classic blue-white-red (\code{RdBu} reversed) palette matching custom breaks.
 
 \examples{
 \dontrun{
-# Basic expression heatmap without integrated AUCell row
+# Basic expression heatmap without integrated row
 Plot_Group_Gene_Heatmap(
   seurat_obj = sce,
   features = c("CD3D", "CD3E", "CD4", "CD8A"),
@@ -94,7 +99,7 @@ Plot_Group_Gene_Heatmap(
   add_aucell_row = FALSE
 )
 
-# With top AUCell pathway/marker integrated score row
+# With top integrated gene signature score row
 Plot_Group_Gene_Heatmap(
   seurat_obj = sce,
   features = c("TNF", "IL6", "NFKB1", "RELA"),

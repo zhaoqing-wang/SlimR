@@ -26,11 +26,6 @@ export(Plot_Voronoi_diagram)
 export(Read_excel_markers)
 export(Read_seurat_markers)
 export(paletteDiscrete)
-importFrom(AUCell,
-  AUCell_buildRankings,
-  AUCell_calcAUC,
-  getAUC
-)
 importFrom(RColorBrewer,brewer.pal)
 importFrom(Seurat,
   "DefaultAssay<-",
@@ -45,10 +40,6 @@ importFrom(Seurat,
   GetAssayData,
   Idents,
   RenameIdents
-)
-importFrom(SeuratObject,
-  GetAssayData,
-  LayerData
 )
 importFrom(cowplot,plot_grid)
 importFrom(dplyr,

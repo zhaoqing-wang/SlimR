@@ -1,11 +1,12 @@
-#' Plot Grouped Gene Z-Score Heatmap with Optional AUCell Integrated Row
+#' Plot Grouped Gene Z-Score Heatmap with Optional Integrated Score Row
 #'
 #' @description
 #' Generates a publication-quality mean Z-score expression heatmap across cell 
 #' groups from a Seurat object using \pkg{pheatmap}. Optionally computes and 
-#' adds a top row representing the integrated pathway/marker expression score 
-#' calculated via \pkg{AUCell}. Row annotations distinguish individual gene 
-#' expression rows from the optional AUCell weighted row. Column annotations 
+#' appends a top row representing the integrated pathway or marker signature 
+#' score (mean gene expression across target features per cell) before group 
+#' mean calculation and Z-score scaling. Row annotations distinguish individual gene 
+#' expression rows from the optional integrated weighted row. Column annotations 
 #' and row annotations are automatically styled using SlimR's internal discrete 
 #' palettes.
 #'
@@ -24,9 +25,9 @@
 #' @param slot_or_layer Character string specifying the layer/slot to extract. 
 #'   Default is \code{"data"}.
 #' @param add_aucell_row Logical. If \code{TRUE} (default), computes an integrated 
-#'   expression score across \code{features} per cell using \pkg{AUCell} and 
-#'   appends its group mean as the top row of the heatmap.
-#' @param aucell_row_name Character string naming the top integrated AUCell row 
+#'   mean expression signature across \code{features} per cell and appends its 
+#'   group-level mean Z-score as the top row of the heatmap.
+#' @param aucell_row_name Character string naming the top integrated row 
 #'   when \code{add_aucell_row = TRUE}. Default is \code{"Integrated_Score"}.
 #' @param cluster_rows Logical. Whether to perform hierarchical clustering on 
 #'   rows. Default is \code{FALSE} to maintain input gene order.
@@ -37,6 +38,8 @@
 #'   \code{"calm"}). Default is \code{"stallion"}.
 #' @param scale_range Numeric vector of length 2 defining the minimum and 
 #'   maximum limits for the heatmap break range. Default is \code{c(-1.25, 1.25)}.
+#' @param annotation_legend Logical. Whether to show legends for the column and row 
+#'   annotations (e.g., Group and Feature Type color bars). Default is \code{FALSE}.
 #' @param cellwidth Numeric. Width of individual heatmap cells in points. 
 #'   Set to make cells square. Default is \code{18}.
 #' @param cellheight Numeric. Height of individual heatmap cells in points. 
@@ -50,18 +53,15 @@
 #'
 #' @family Section_5_Other_Functions_Provided
 #'
-#' @importFrom Seurat DefaultAssay
-#' @importFrom SeuratObject LayerData GetAssayData
-#' @importFrom AUCell AUCell_buildRankings AUCell_calcAUC getAUC
+#' @importFrom Seurat DefaultAssay FetchData
 #' @importFrom pheatmap pheatmap
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
 #' @importFrom methods slot
-#' @importFrom stats aggregate
 #'
 #' @examples
 #' \dontrun{
-#' # Basic expression heatmap without integrated AUCell row
+#' # Basic expression heatmap without integrated row
 #' Plot_Group_Gene_Heatmap(
 #'   seurat_obj = sce,
 #'   features = c("CD3D", "CD3E", "CD4", "CD8A"),
@@ -69,7 +69,7 @@
 #'   add_aucell_row = FALSE
 #' )
 #'
-#' # With top AUCell pathway/marker integrated score row
+#' # With top integrated gene signature score row
 #' Plot_Group_Gene_Heatmap(
 #'   seurat_obj = sce,
 #'   features = c("TNF", "IL6", "NFKB1", "RELA"),
@@ -89,12 +89,13 @@ Plot_Group_Gene_Heatmap <- function(seurat_obj,
                                     cluster_cols = FALSE,
                                     palette_set = "stallion",
                                     scale_range = c(-1.25, 1.25),
+                                    annotation_legend = FALSE,
                                     cellwidth = 18,
                                     cellheight = 18,
                                     main = "Group Gene Heatmap Plot | SlimR") {
   
   # ---------------------------------------------------------------------------
-  # 1. Parameter Validation & Data Extraction
+  # 1. Parameter Validation & Factor Levels Lock
   # ---------------------------------------------------------------------------
   if (!group_by %in% colnames(seurat_obj@meta.data)) {
     stop(paste0("Column '", group_by, "' not found in seurat_obj@meta.data."))
@@ -104,78 +105,81 @@ Plot_Group_Gene_Heatmap <- function(seurat_obj,
     assay <- Seurat::DefaultAssay(seurat_obj)
   }
   
-  # Safely extract expression matrix without triggering Seurat v5 internal %||% warning
-  assay_obj <- seurat_obj[[assay]]
-  exp_matrix <- tryCatch({
-    # Seurat v5 layer access
-    if (inherits(assay_obj, "Assay5")) {
-      SeuratObject::LayerData(assay_obj, layer = slot_or_layer)
-    } else {
-      # Seurat v4 slot access
-      SeuratObject::GetAssayData(assay_obj, slot = slot_or_layer)
-    }
-  }, error = function(e) {
-    # Fallback method using standard S4 slot access
-    methods::slot(assay_obj, slot_or_layer)
-  })
+  # Strictly preserve existing Factor levels or maintain natural appearance order
+  group_vec <- seurat_obj@meta.data[[group_by]]
+  if (is.factor(group_vec)) {
+    unique_groups <- levels(droplevels(group_vec))
+  } else {
+    unique_groups <- unique(group_vec)
+  }
+  cell_groups <- as.character(group_vec)
   
+  # ---------------------------------------------------------------------------
+  # 2. Fast Target-Only Data Extraction via FetchData (Memory & Speed Optimized)
+  # ---------------------------------------------------------------------------
   # Check missing features
-  valid_features <- intersect(features, rownames(exp_matrix))
+  all_genes_in_obj <- rownames(seurat_obj[[assay]])
+  valid_features <- features[features %in% all_genes_in_obj] # Keep user's exact input order
+  
   if (length(valid_features) == 0) {
-    stop("None of the specified 'features' were found in the expression matrix.")
+    stop("None of the specified 'features' were found in the specified assay.")
   } else if (length(valid_features) < length(features)) {
     missing <- setdiff(features, valid_features)
     warning("The following features were not found and omitted: ", paste(missing, collapse = ", "))
   }
   
-  # Group info vector
-  cell_groups <- as.character(seurat_obj@meta.data[[group_by]])
-  unique_groups <- unique(cell_groups)
+  # Fetch ONLY the requested gene features (cells x features)
+  fetched_data <- Seurat::FetchData(
+    object = seurat_obj,
+    vars = valid_features,
+    layer = slot_or_layer,
+    assay = assay
+  )
+  
+  # Transpose to (features x cells) matrix
+  gene_mat <- t(as.matrix(fetched_data))
   
   # ---------------------------------------------------------------------------
-  # 2. Calculate Gene-Level Mean Expression per Group & Scale (Z-Score)
+  # 3. Calculate Gene-Level Mean Expression per Group & Scale (Z-Score)
   # ---------------------------------------------------------------------------
-  gene_mat <- as.matrix(exp_matrix[valid_features, , drop = FALSE])
-  
   # Calculate mean expression per group for each gene
   group_mean_gene <- do.call(rbind, lapply(valid_features, function(g) {
     tapply(gene_mat[g, ], cell_groups, mean, na.rm = TRUE)
   }))
   rownames(group_mean_gene) <- valid_features
-  group_mean_gene <- group_mean_gene[, unique_groups, drop = FALSE]
+  
+  # Force matrix column order to STRICTLY match unique_groups
+  group_mean_gene <- group_mean_gene[, intersect(unique_groups, colnames(group_mean_gene)), drop = FALSE]
   
   # Perform Row Z-score normalization using standard base scale
   gene_zscore <- t(base::scale(t(group_mean_gene)))
   gene_zscore[is.na(gene_zscore)] <- 0 # Handle zero variance genes
   
   # ---------------------------------------------------------------------------
-  # 3. Optional: AUCell Weighted/Integrated Row Calculation
+  # 4. Optional: Integrated Signature Weighted Row Calculation (Mean Expression)
   # ---------------------------------------------------------------------------
   if (add_aucell_row) {
-    # Build AUCell Rankings
-    gene_sets <- list(TargetSet = valid_features)
-    cells_rankings <- AUCell::AUCell_buildRankings(exp_matrix, plotStats = FALSE, verbose = FALSE)
-    cells_AUC <- AUCell::AUCell_calcAUC(gene_sets, cells_rankings, verbose = FALSE)
-    auc_scores <- as.numeric(AUCell::getAUC(cells_AUC)["TargetSet", ])
+    # Calculate cell-level mean expression across target features
+    cell_integrated_score <- colMeans(gene_mat, na.rm = TRUE)
     
-    # Group mean for AUCell
-    auc_group_mean <- tapply(auc_scores, cell_groups, mean, na.rm = TRUE)
-    auc_group_mean <- auc_group_mean[unique_groups]
+    # Calculate group-level mean of the integrated score
+    integrated_group_mean <- tapply(cell_integrated_score, cell_groups, mean, na.rm = TRUE)
+    integrated_group_mean <- integrated_group_mean[colnames(gene_zscore)] # Lock group order
     
-    # Scale AUCell score across groups (Z-score)
-    auc_zscore <- base::scale(auc_group_mean)
-    auc_zscore[is.na(auc_zscore)] <- 0 # Robustness handle for zero-variance AUC
-    auc_zscore <- t(auc_zscore)
-    rownames(auc_zscore) <- aucell_row_name
+    # Scale integrated score across groups (Z-score)
+    integrated_zscore <- base::scale(integrated_group_mean)
+    integrated_zscore[is.na(integrated_zscore)] <- 0 # Handle zero-variance
+    integrated_zscore <- t(integrated_zscore)
+    rownames(integrated_zscore) <- aucell_row_name
     
-    # Combine AUCell row on top
-    final_mat <- rbind(auc_zscore, gene_zscore)
+    # Combine Integrated row on top
+    final_mat <- rbind(integrated_zscore, gene_zscore)
   } else {
     final_mat <- gene_zscore
   }
   
   # ---------------------------------------------------------------------------
-  # 4. Color Palette & Break Setup (Matching Image 2 Style)
+  # 5. Color Palette & Break Setup
   # ---------------------------------------------------------------------------
   colors <- rev(RColorBrewer::brewer.pal(n = 11, name = "RdBu"))
   colors_use <- grDevices::colorRampPalette(colors = colors)(100)
@@ -193,15 +197,23 @@ Plot_Group_Gene_Heatmap <- function(seurat_obj,
   final_mat[final_mat > max_val] <- max_val
 
   # ---------------------------------------------------------------------------
-  # 5. Annotation Setup (Rows & Columns using paletteDiscrete)
+  # 6. Annotation Setup (Dynamic Feature_Type Column Header & Exact Ordering)
   # ---------------------------------------------------------------------------
-  # Column Annotation (Groups)
+  current_cols <- colnames(final_mat)
+  
+  # Column Annotation (Groups) - Factor levels MUST match current_cols
   annotation_col <- data.frame(
-    Group = factor(colnames(final_mat), levels = unique_groups),
-    row.names = colnames(final_mat)
+    Group = factor(current_cols, levels = current_cols),
+    row.names = current_cols
   )
   
-  # Row Annotation (Feature Type)
+  # Row Annotation (Feature Type Header & Labels)
+  feature_type_header <- if (add_aucell_row) {
+    "Weighted / Genes"
+  } else {
+    "Gene"
+  }
+  
   row_types <- if (add_aucell_row) {
     c("Weighted expression", rep("Gene Expression", length(valid_features)))
   } else {
@@ -209,27 +221,28 @@ Plot_Group_Gene_Heatmap <- function(seurat_obj,
   }
   
   annotation_row <- data.frame(
-    Feature_Type = factor(row_types, levels = unique(row_types)),
+    Type = factor(row_types, levels = unique(row_types)),
     row.names = rownames(final_mat)
   )
+  colnames(annotation_row) <- feature_type_header
   
   # Color Mapping Generation using internal paletteDiscrete
-  col_group_colors <- paletteDiscrete(values = unique_groups, set = palette_set)
+  col_group_colors <- paletteDiscrete(values = current_cols, set = palette_set)
   col_row_type_colors <- c("Weighted expression" = "#4DAF4A", "Gene Expression" = "#377EB8")
   
   ann_colors <- list(
-    Group = col_group_colors,
-    Feature_Type = col_row_type_colors[unique(row_types)]
+    Group = col_group_colors
   )
+  ann_colors[[feature_type_header]] <- col_row_type_colors[unique(row_types)]
   
   # ---------------------------------------------------------------------------
-  # 6. Heatmap Plotting (Square cells with cellwidth/cellheight)
+  # 7. Heatmap Plotting
   # ---------------------------------------------------------------------------
   p <- pheatmap::pheatmap(
     mat = final_mat,
     color = colors_use,
     breaks = my_breaks,
-    border_color = "white",
+    border_color = "black",
     cluster_rows = cluster_rows,
     cluster_cols = cluster_cols,
     annotation_col = annotation_col,
@@ -237,7 +250,7 @@ Plot_Group_Gene_Heatmap <- function(seurat_obj,
     annotation_colors = ann_colors,
     show_colnames = TRUE,
     show_rownames = TRUE,
-    annotation_legend = TRUE,
+    annotation_legend = annotation_legend,
     cellwidth = cellwidth,
     cellheight = cellheight,
     main = main
