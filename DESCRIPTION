@@ -25,9 +25,7 @@ Imports:
     tools,
     tibble,
     gtools,
-    AUCell,
     RColorBrewer,
-    SeuratObject,
     methods
 Suggests:
     crayon,

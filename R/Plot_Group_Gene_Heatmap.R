@@ -228,7 +228,7 @@ Plot_Group_Gene_Heatmap <- function(seurat_obj,
   
   # Color Mapping Generation using internal paletteDiscrete
   col_group_colors <- paletteDiscrete(values = current_cols, set = palette_set)
-  col_row_type_colors <- c("Weighted expression" = "#4DAF4A", "Gene Expression" = "#377EB8")
+  col_row_type_colors <- c("Weighted expression" = "darkmagenta", "Gene Expression" = "#377EB8")
   
   ann_colors <- list(
     Group = col_group_colors
