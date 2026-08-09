@@ -27,7 +27,8 @@ Imports:
     gtools,
     AUCell,
     RColorBrewer,
-    SeuratObject
+    SeuratObject,
+    methods
 Suggests:
     crayon,
     RANN,
