@@ -15,6 +15,7 @@ Plot_Hierarchy_Proportion(
   proportion = TRUE,
   Groups = NULL,
   adjust_by_group = FALSE,
+  show_value_proportion = FALSE,
   show_labels = TRUE,
   low_col = "white",
   high_col = "navy"
@@ -27,39 +28,43 @@ Plot_Hierarchy_Proportion(
 \code{seurat_obj@meta.data} that holds the top‑level cell‑type labels.}
 
 \item{col_Main_cell_types}{Optional named or unnamed character vector of
-colours for the \code{Main_cell_types} categories.  If \code{NULL},
+colours for the \code{Main_cell_types} categories. If \code{NULL},
 colours are generated automatically.}
 
 \item{Cell_types}{Character string naming a column with second‑level
-(sub‑type) labels.  Use \code{NULL} if no second level exists.}
+(sub‑type) labels. Use \code{NULL} if no second level exists.}
 
 \item{col_Cell_types}{Optional colours for the \code{Cell_types} categories.}
 
 \item{Sub_cell_types}{Character string naming a column with third‑level
-(sub‑sub‑type) labels.  Use \code{NULL} if absent.  \code{Cell_types}
+(sub‑sub‑type) labels. Use \code{NULL} if absent. \code{Cell_types}
 must be supplied when \code{Sub_cell_types} is used.}
 
 \item{col_Sub_cell_types}{Optional colours for the \code{Sub_cell_types}
 categories.}
 
-\item{proportion}{Logical scalar.  If \code{TRUE} (the default), a
+\item{proportion}{Logical scalar. If \code{TRUE} (the default), a
 proportion heatmap is drawn below the tree; if \code{FALSE}, only the
 tree with labels is returned.}
 
 \item{Groups}{Character string naming a \code{meta.data} column that
-defines sample groups for the proportion heatmap.  Required when
+defines sample groups for the proportion heatmap. Required when
 \code{proportion = TRUE}.}
 
-\item{adjust_by_group}{Logical scalar.  If \code{FALSE} (default), each
+\item{adjust_by_group}{Logical scalar. If \code{FALSE} (default), each
 row of the heatmap shows the proportion of each terminal cell type
-within the corresponding group (row‑wise percentage).  Set to \code{TRUE}
+within the corresponding group (row‑wise percentage). Set to \code{TRUE}
 when displaying sub‑types derived from a larger, unevenly distributed
 population (e.g., immune subsets isolated from different conditions
-where total immune cell numbers differ).  In that case, the row‑wise
+where total immune cell numbers differ). In that case, the row‑wise
 proportion is multiplied by the ratio of the group’s total cell count
 to the mean group cell count, highlighting both within‑group composition
-and between‑group abundance differences.  The colour scale is then
-normalised across all cells and groups.}
+and between‑group abundance differences. The colour scale and cell labels
+are then updated based on these adjusted proportions.}
+
+\item{show_value_proportion}{Logical scalar. If \code{TRUE}, displays the
+calculated proportion value (or adjusted proportion if \code{adjust_by_group = TRUE})
+as formatted text inside each cell of the heatmap. Default is \code{FALSE}.}
 
 \item{show_labels}{Logical scalar. If \code{TRUE} (the default), text
 labels are placed next to the non‑leaf Main and Cell level nodes.}
@@ -87,11 +92,11 @@ device.
 }
 \description{
 Creates a publication‑quality composite figure with a hierarchical tree
-panel and an optional proportion heatmap.  Leaf labels are connected to the
+panel and an optional proportion heatmap. Leaf labels are connected to the
 terminal nodes by short vertical sticks and placed at a fixed distance
 below the tree, guaranteeing a clean separation and perfect top alignment
-of all cell‑type names.  Short vertical ticks on top of the heatmap mark
-each column, aligning with the labels above.  The tree height is independent
+of all cell‑type names. Short vertical ticks on top of the heatmap mark
+each column, aligning with the labels above. The tree height is independent
 of label length; the heatmap sits tightly beneath the labels.
 }
 \section{Colour palette}{
@@ -110,23 +115,15 @@ integrative single-cell chromatin accessibility analysis.
 
 \examples{
 \dontrun{
-# Full three-level hierarchy with proportion heatmap
+# Full three-level hierarchy with proportion heatmap and displayed proportion values
 res <- Plot_Hierarchy_Proportion(
-  seurat_obj          = sce,
-  Main_cell_types     = "Main_cell_type",
-  Cell_types          = "Cell_type",
-  Sub_cell_types      = "Sub_cell_type",
-  proportion          = TRUE,
-  Groups              = "orig.ident"
-)
-
-# Only the tree, user-specified colours
-res <- Plot_Hierarchy_Proportion(
-  sce,
-  "Main_cell_type",
-  col_Main_cell_types = c(Immune = "red", Stromal = "blue", Epithelial = "green"),
-  "Cell_type",
-  proportion = FALSE
+  seurat_obj            = sce,
+  Main_cell_types       = "Main_cell_type",
+  Cell_types            = "Cell_type",
+  Sub_cell_types        = "Sub_cell_type",
+  proportion            = TRUE,
+  Groups                = "orig.ident",
+  show_value_proportion = TRUE
 )
 }
 }
