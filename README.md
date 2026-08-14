@@ -708,32 +708,29 @@ res$combined_plot    # combined plot (requires patchwork)
 <details>
 <summary><b>Detailed parameter guide</b></summary>
 
-- **Hierarchy levels**  
-  `Main_cell_types`, `Cell_types`, `Sub_cell_types` are character strings naming columns in `seurat_obj@meta.data`.  
-  Use `NULL` to omit a level. If `Sub_cell_types` is given, `Cell_types` must also be provided.  
-  Category names (e.g. “T cell”) must be **unique within each level** (they can repeat across levels).
+* **Hierarchy levels**
+`Main_cell_types`, `Cell_types`, `Sub_cell_types` are character strings naming columns in `seurat_obj@meta.data`.
+Use `NULL` to omit a level. If `Sub_cell_types` is given, `Cell_types` must also be provided.
+Category names (e.g. “T cell”) must be **unique within each level** (they can repeat across levels).
+* **Partial sub‑clustering**
+It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub‑label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
+* **Label placement & adaptive height**
+Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
+* **Colour control**
+`col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function generates a palette using the internal `paletteDiscrete()` function, which replicates the *stallion* palette from the **ArchR** package. No external ArchR installation is required.
+* **Proportion heatmap**
+`proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).
+`Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑navy colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis, and the number of cells in each group is appended (e.g. “Control (1254)”).
+* **Displaying cell values (`show_value_proportion`)**
+Set `show_value_proportion = TRUE` to overlay formatted numeric proportion values inside the heatmap cells. Text color dynamically switches between black and white based on fill intensity to maximize readability.
+* **Adjustment for unequal group sizes (`adjust_by_group`)**
+When analysing sub‑types derived from a larger population (e.g., immune subsets) and group sizes differ, set `adjust_by_group = TRUE`. This scales proportions by group size relative to the mean group size, highlighting both within-group composition and overall abundance differences. When combined with `show_value_proportion = TRUE`, the displayed values and heatmap colors reflect these adjusted proportions.
 
-- **Partial sub‑clustering**  
-  It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub‑label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
 
-- **Label placement & adaptive height**  
-  Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
-
-- **Colour control**  
-  `col_Main_cell_types`, `col_Cell_types`, `col_Sub_cell_types` accept named or unnamed colour vectors. When missing, the function generates a palette using the internal `paletteDiscrete()` function, which replicates the *stallion* palette from the **ArchR** package.  No external ArchR installation is required.
-
-- **Proportion heatmap**  
-  `proportion = TRUE` (default) adds a lower panel showing the fraction of each terminal cell type per group (column `Groups`).  
-  `Groups` is required only when `proportion = TRUE`. The heatmap uses the same leaf order as the tree, has a tight black border, and uses a white‑to‑red colour gradient (customisable via `low_col` and `high_col`). Group labels are shown in **bold** on the y‑axis, and, if available, the number of cells in each group is appended (e.g. “Control (1254)”).  
-
-  - **Adjustment for unequal group sizes (`adjust_by_group`)**  
-    When analysing sub‑types derived from a larger population (e.g., immune subsets) and the total number of cells in each group differs substantially, set `adjust_by_group = TRUE`. This option multiplies the row‑wise proportion by the ratio of the group’s cell count to the mean group cell count. The resulting heatmap then reflects both within‑group composition and between‑group abundance differences. The colour scale is automatically normalised across all cells and groups. For broad cell type visualisation or when group sizes are balanced, keep the default `FALSE`.
-
-- **Non‑leaf annotations**  
-  `show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
-
-- **Output**  
-  The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
+* **Non‑leaf annotations**
+`show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
+* **Output**
+The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
 
 </details>
 
