@@ -481,25 +481,31 @@ Plot_Hierarchy_Proportion <- function(
       list(Group = grp_vec, End = factor(leaf_id_sub, levels = leaf_ids_ordered)),
       FUN = length
     )
+    # Basic row-wise proportion
     tab$Proportion <- stats::ave(tab$Freq, tab$Group, FUN = function(x) x / sum(x))
 
+    # Group ordering
     group_levels <- get_ordered_cats(meta[[Groups]])
     tab$y_num <- as.numeric(factor(tab$Group, levels = group_levels))
     n_groups <- length(group_levels)
 
+    # Calculate group sizes for labeling and optional correction
     group_sizes <- tab$Freq |> tapply(tab$Group, sum)
-    group_sizes <- group_sizes[group_levels]
+    group_sizes <- group_sizes[group_levels]  # ensure order
 
+    # Adjust by group size if requested
     if (adjust_by_group) {
       mean_size <- mean(group_sizes, na.rm = TRUE)
-      if (mean_size == 0) mean_size <- 1
+      if (mean_size == 0) mean_size <- 1  # prevent division by zero
       size_factor <- group_sizes / mean_size
       tab$Proportion <- tab$Proportion * size_factor[tab$Group]
     }
 
+    # Convert Proportion to Percentage (0 - 100)
     tab$Proportion <- tab$Proportion * 100
     tab$x_num <- as.numeric(tab$End)
 
+    # Build group labels with cell counts
     group_labels <- paste0(group_levels, " (", group_sizes, ")")
 
     border_df <- data.frame(
@@ -518,13 +524,16 @@ Plot_Hierarchy_Proportion <- function(
     max_prop <- max(tab$Proportion, na.rm = TRUE)
     prop_breaks <- pretty(c(min_prop, max_prop), n = 4)
 
+    # Prepare text overlay for values (%)
     tab$prop_text <- sprintf("%.2f", tab$Proportion)
+    # Dynamic text color (white for high intensity cells, black for low)
     cutoff <- min_prop + (max_prop - min_prop) * 0.65
     tab$text_col <- ifelse(tab$Proportion > cutoff, "white", "black")
 
+    # Header label for y-axis categories, placed below group list with plain text style
     y_axis_header <- data.frame(
       x = 0.4,
-      y = n_groups + 1.1,
+      y = 0.1,
       label = "Group (Cell Number)"
     )
 
@@ -563,7 +572,7 @@ Plot_Hierarchy_Proportion <- function(
       ggplot2::geom_text(
         data = y_axis_header,
         ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
-        hjust = 1, vjust = 0, size = 3.2, fontface = "bold"
+        hjust = 1, vjust = 1, size = 3.2, fontface = "plain"
       ) +
       ggplot2::scale_fill_gradient(
         low = low_col, high = high_col,
@@ -577,11 +586,11 @@ Plot_Hierarchy_Proportion <- function(
         labels = group_labels,
         expand = c(0, 0)
       ) +
-      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(0.5, n_groups + 1.5), clip = "off") +
+      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(-0.2, n_groups + 0.7), clip = "off") +
       ggplot2::theme_minimal() +
       ggplot2::theme(
         axis.text.x = ggplot2::element_blank(),
-        axis.text.y = ggplot2::element_text(size = 9, face = "bold"),
+        axis.text.y = ggplot2::element_text(size = 9, face = "plain"),
         axis.title = ggplot2::element_blank(),
         panel.grid.major = ggplot2::element_blank(),
         panel.grid.minor = ggplot2::element_blank(),
