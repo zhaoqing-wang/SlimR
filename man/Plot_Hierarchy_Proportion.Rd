@@ -52,19 +52,15 @@ defines sample groups for the proportion heatmap. Required when
 \code{proportion = TRUE}.}
 
 \item{adjust_by_group}{Logical scalar. If \code{FALSE} (default), each
-row of the heatmap shows the proportion of each terminal cell type
-within the corresponding group (row‑wise percentage). Set to \code{TRUE}
-when displaying sub‑types derived from a larger, unevenly distributed
-population (e.g., immune subsets isolated from different conditions
-where total immune cell numbers differ). In that case, the row‑wise
-proportion is multiplied by the ratio of the group’s total cell count
-to the mean group cell count, highlighting both within‑group composition
-and between‑group abundance differences. The colour scale and cell labels
-are then updated based on these adjusted proportions.}
+row of the heatmap shows the proportion (\%) of each terminal cell type
+within the corresponding group. Set to \code{TRUE} when displaying
+sub‑types derived from a larger, unevenly distributed population (e.g.,
+immune subsets isolated from different conditions where total immune cell
+numbers differ).}
 
 \item{show_value_proportion}{Logical scalar. If \code{TRUE}, displays the
-calculated proportion value (or adjusted proportion if \code{adjust_by_group = TRUE})
-as formatted text inside each cell of the heatmap. Default is \code{FALSE}.}
+calculated percentage proportion value as formatted text inside each cell
+of the heatmap. Default is \code{FALSE}.}
 
 \item{show_labels}{Logical scalar. If \code{TRUE} (the default), text
 labels are placed next to the non‑leaf Main and Cell level nodes.}
@@ -115,7 +111,7 @@ integrative single-cell chromatin accessibility analysis.
 
 \examples{
 \dontrun{
-# Full three-level hierarchy with proportion heatmap and displayed proportion values
+# Full three-level hierarchy with percentage proportion heatmap
 res <- Plot_Hierarchy_Proportion(
   seurat_obj            = sce,
   Main_cell_types       = "Main_cell_type",

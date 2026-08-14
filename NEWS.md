@@ -4,9 +4,12 @@
     *   New function `Plot_Group_Gene_Heatmap()`: Generates publication-quality group-level mean Z-score expression heatmaps across custom cell groups (e.g., cell types or samples). Supports seamless integration with Seurat v4 and v5 objects.
 
 *   **Improvements**
-    *   Enhanced `Plot_Hierarchy_Proportion()` with the new `show_value_proportion` parameter to overlay numeric values (including group-adjusted proportions) onto heatmap tiles with dynamic text contrast.
+    *   Enhanced `Plot_Hierarchy_Proportion()`:
+        *   Added percentage scale conversion (`0–100%`) for proportion heatmap values and updated legend titles to `"Proportion (%)"` / `"Adjusted Proportion (%)"`.
+        *   Added a `"Group (Cell Number)"` axis header above Y-axis labels for improved readability.
+        *   Introduced `show_value_proportion` parameter to overlay percentage numbers inside heatmap cells with dynamic text contrast.
     *   Integrated discrete color palette handling in `Plot_Group_Gene_Heatmap()` using SlimR's internal `paletteDiscrete()` function (derived from ArchR) for column and row annotation bars.
-    *   Optimized and revised the roxygen2 comments for some functions.
+    *   Optimized and revised roxygen2 comments for relevant functions.
     *   Updated general documentation and README structure.
 
 ## Version 1.1.8 (2026-07-31)

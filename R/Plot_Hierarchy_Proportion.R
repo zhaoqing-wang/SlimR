@@ -42,18 +42,14 @@
 #'   defines sample groups for the proportion heatmap. Required when
 #'   \code{proportion = TRUE}.
 #' @param adjust_by_group Logical scalar. If \code{FALSE} (default), each
-#'   row of the heatmap shows the proportion of each terminal cell type
-#'   within the corresponding group (row‑wise percentage). Set to \code{TRUE}
-#'   when displaying sub‑types derived from a larger, unevenly distributed
-#'   population (e.g., immune subsets isolated from different conditions
-#'   where total immune cell numbers differ). In that case, the row‑wise
-#'   proportion is multiplied by the ratio of the group’s total cell count
-#'   to the mean group cell count, highlighting both within‑group composition
-#'   and between‑group abundance differences. The colour scale and cell labels
-#'   are then updated based on these adjusted proportions.
+#'   row of the heatmap shows the proportion (%) of each terminal cell type
+#'   within the corresponding group. Set to \code{TRUE} when displaying
+#'   sub‑types derived from a larger, unevenly distributed population (e.g.,
+#'   immune subsets isolated from different conditions where total immune cell
+#'   numbers differ).
 #' @param show_value_proportion Logical scalar. If \code{TRUE}, displays the
-#'   calculated proportion value (or adjusted proportion if \code{adjust_by_group = TRUE})
-#'   as formatted text inside each cell of the heatmap. Default is \code{FALSE}.
+#'   calculated percentage proportion value as formatted text inside each cell
+#'   of the heatmap. Default is \code{FALSE}.
 #' @param show_labels Logical scalar. If \code{TRUE} (the default), text
 #'   labels are placed next to the non‑leaf Main and Cell level nodes.
 #' @param low_col Character string for the lowest proportion colour in the
@@ -91,7 +87,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Full three-level hierarchy with proportion heatmap and displayed proportion values
+#' # Full three-level hierarchy with percentage proportion heatmap
 #' res <- Plot_Hierarchy_Proportion(
 #'   seurat_obj            = sce,
 #'   Main_cell_types       = "Main_cell_type",
@@ -501,6 +497,7 @@ Plot_Hierarchy_Proportion <- function(
       tab$Proportion <- tab$Proportion * size_factor[tab$Group]
     }
 
+    tab$Proportion <- tab$Proportion * 100
     tab$x_num <- as.numeric(tab$End)
 
     group_labels <- paste0(group_levels, " (", group_sizes, ")")
@@ -524,6 +521,12 @@ Plot_Hierarchy_Proportion <- function(
     tab$prop_text <- sprintf("%.2f", tab$Proportion)
     cutoff <- min_prop + (max_prop - min_prop) * 0.65
     tab$text_col <- ifelse(tab$Proportion > cutoff, "white", "black")
+
+    y_axis_header <- data.frame(
+      x = 0.4,
+      y = n_groups + 1.1,
+      label = "Group (Cell Number)"
+    )
 
     p_prop <- ggplot2::ggplot() +
       ggplot2::geom_tile(
@@ -557,11 +560,16 @@ Plot_Hierarchy_Proportion <- function(
         ggplot2::aes(x = .data$x, xend = .data$xend, y = .data$y, yend = .data$yend),
         colour = "black", linewidth = 0.3
       ) +
+      ggplot2::geom_text(
+        data = y_axis_header,
+        ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
+        hjust = 1, vjust = 0, size = 3.2, fontface = "bold"
+      ) +
       ggplot2::scale_fill_gradient(
         low = low_col, high = high_col,
         limits = c(min_prop, max_prop),
         breaks = prop_breaks,
-        name = if (adjust_by_group) "Adjusted Proportion" else "Proportion"
+        name = if (adjust_by_group) "Adjusted Proportion (%)" else "Proportion (%)"
       ) +
       ggplot2::scale_x_continuous(expand = c(0, 0)) +
       ggplot2::scale_y_continuous(
@@ -569,7 +577,7 @@ Plot_Hierarchy_Proportion <- function(
         labels = group_labels,
         expand = c(0, 0)
       ) +
-      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(0.5, n_groups + 0.7), clip = "off") +
+      ggplot2::coord_cartesian(xlim = xlim_use, ylim = c(0.5, n_groups + 1.5), clip = "off") +
       ggplot2::theme_minimal() +
       ggplot2::theme(
         axis.text.x = ggplot2::element_blank(),
