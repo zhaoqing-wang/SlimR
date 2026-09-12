@@ -130,7 +130,7 @@ View(Cellmarker2_table)
 
 **Reference:** *Franzén et al. (2019) [doi:10.1093/database/baz046](https://doi.org/10.1093/database/baz046)*
 
-PanglaoDB is a public database of **>1,054 single‑cell experiments** (covering most major platforms) with **>4 million cells** from human and mouse tissues. It includes a community‑curated marker compendium of **>6,000 gene–cell‑type associations**. SlimR integrates this marker compendium, allowing filtering by species and organ.
+PanglaoDB is a public database of **1,368 single‑cell experiments** (covering most major platforms) with **>5 million cells** from human and mouse tissues. It includes a community‑curated marker compendium of **>8,000 gene–cell‑type associations**. SlimR integrates this marker compendium, allowing filtering by species and organ.
 
 ``` r
 PanglaoDB <- SlimR::PanglaoDB
