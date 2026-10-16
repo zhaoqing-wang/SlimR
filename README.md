@@ -18,10 +18,11 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
     - [2.2 From PanglaoDB Database](#22-from-panglaodb-database)
     - [2.3 From ScType Database](#23-from-sctype-database)
     - [2.4 From CellTypist Organ Atlas](#24-from-celltypist-organ-atlas)
-    - [2.5 From Seurat Objects](#25-from-seurat-objects)
-    - [2.6 From Scanpy (Python) Objects](#26-from-scanpy-python-objects)
-    - [2.7 From Excel Tables](#27-from-excel-tables)
-    - [2.8 Built-in Markers Lists](#28-built-in-markers-lists)
+    - [2.5 From scBaseCount Database](#25-from-scbasecount-database)
+    - [2.6 From Seurat Objects](#26-from-seurat-objects)
+    - [2.7 From Scanpy (Python) Objects](#27-from-scanpy-python-objects)
+    - [2.8 From Excel Tables](#28-from-excel-tables)
+    - [2.9 Other Built-in Markers Lists](#29-other-built-in-markers-lists)
 3. [Automated Annotation Workflow](#3-automated-annotation-workflow)
     - [3.1 Calculate Parameter](#31-calculate-parameter)
     - [3.2 Cluster-Based Annotation](#32-cluster-based-annotation)
@@ -208,7 +209,35 @@ Markers_list_CellTypist_top20 <- lapply(Markers_list_CellTypist, function(df) he
 - Each cell‑type data frame is already ranked by `logfoldchanges` (descending) – simply use `head(df, n)` to obtain the top *n* markers.
 - The full list can be passed directly to SlimR’s annotation functions as a standard `Markers_list` object.
 
-### 2.5 From Seurat Objects
+### 2.5 From scBaseCount Database
+
+**Reference:** *Youngblut et al. (2026) [doi:10.1016/j.cell.2026.08.025](https://doi.org/10.1016/j.cell.2026.08.025)*
+
+scBaseCount provides cross-species marker gene sets derived from over 500 million cells. SlimR includes four species-specific lists—human, mouse, zebrafish, and Drosophila—where each list contains cell type–marker gene sets ready for annotation.
+
+``` r
+scBaseCount <- SlimR::scBaseCount
+
+Markers_list_scBaseCount_human     <- scBaseCount$human_gene_sets
+Markers_list_scBaseCount_mouse     <- scBaseCount$mouse_gene_sets
+Markers_list_scBaseCount_fly       <- scBaseCount$fly_gene_sets
+Markers_list_scBaseCount_zebrafish <- scBaseCount$zebrafish_gene_sets
+```
+
+**Important: Select the species-specific list matching your data.**
+
+<details>
+<summary><b>Optional: Explore available species</b></summary>
+
+``` r
+names(SlimR::scBaseCount)
+# [1] "human_gene_sets"     "mouse_gene_sets"    
+# [3] "fly_gene_sets"       "zebrafish_gene_sets"
+```
+
+</details>
+
+### 2.6 From Seurat Objects
 
 ``` r
 seurat_markers <- Seurat::FindAllMarkers(
@@ -227,7 +256,7 @@ Markers_list_Seurat <- Read_seurat_markers(seurat_markers,
 
 **Important: To avoid long running time, for data with more than 100,000 cells, it is recommended to use scanpy for DEGs calculation (Section 2.6).**
 
-### 2.6 From Scanpy (Python) Objects
+### 2.7 From Scanpy (Python) Objects
 
 Differential expression results from a Scanpy AnnData object can be exported to an Excel file and then loaded directly into SlimR’s standard format using `Read_excel_markers`.
 
@@ -303,7 +332,7 @@ wb.save("DEGs.xlsx")
 After saving the `DEGs.xlsx` file, use the `Read_excel_markers` function from Section 2.7 to import it into R.
 
 
-### 2.7 From Excel Tables
+### 2.8 From Excel Tables
 
 **Format:** Each sheet name = cell type, first row = headers, first column = markers, subsequent columns = metrics (optional).
 
@@ -313,7 +342,7 @@ Markers_list_Excel <- Read_excel_markers("D:/Laboratory/Marker_load.xlsx")
 
 *If your Excel file lacks column headers, set `has_colnames = FALSE`.*
 
-### 2.8 Built-in Markers Lists
+### 2.9 Other Built-in Markers Lists
 
 SlimR includes curated marker lists for specific annotation tasks:
 

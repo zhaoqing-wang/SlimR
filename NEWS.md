@@ -1,4 +1,13 @@
-## Version dev (2026-08-14)
+## Version 1.2.0 (2026-10-16)
+
+*   **New Features**
+    *   Added the `scBaseCount` database, covering Human, Mouse, Drosophila, and Zebrafish, with four species-specific marker gene set lists: `human_gene_sets`, `mouse_gene_sets`, `fly_gene_sets`, and `zebrafish_gene_sets`.
+
+*   **Improvements**
+    *   Added roxygen2 documentation and citation for `scBaseCount` (Youngblut et al., 2026, doi:10.1016/j.cell.2026.08.025), plus README section 2.5.
+    *   Updated general documentation and README structure.
+
+## Version 1.1.9 (2026-08-14)
 
 *   **New Features**
     *   New function `Plot_Group_Gene_Heatmap()`: Generates publication-quality group-level mean Z-score expression heatmaps across custom cell groups (e.g., cell types or samples). Supports seamless integration with Seurat v4 and v5 objects.

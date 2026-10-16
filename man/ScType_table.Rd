@@ -35,7 +35,8 @@ Other Section_0_Database:
 \code{\link{PanglaoDB_raw}},
 \code{\link{PanglaoDB_table}},
 \code{\link{ScType}},
-\code{\link{ScType_raw}}
+\code{\link{ScType_raw}},
+\code{\link{scBaseCount}}
 }
 \concept{Section_0_Database}
 \keyword{datasets}
