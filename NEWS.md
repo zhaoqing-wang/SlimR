@@ -2,9 +2,11 @@
 
 *   **New Features**
     *   Added the `scBaseCount` database, covering Human, Mouse, Drosophila, and Zebrafish, with four species-specific marker gene set lists: `human_gene_sets`, `mouse_gene_sets`, `fly_gene_sets`, and `zebrafish_gene_sets`.
+    *   New function `Compute_Gene_PRC()`: Computes PRC-AUC (Average Precision) and the no-skill baseline for a single gene against a user-defined cell group. Complements `Compute_Gene_AUC_ROC()` and is better suited to rare cell types under dropout and background contamination.
 
 *   **Improvements**
     *   Added roxygen2 documentation and citation for `scBaseCount` (Youngblut et al., 2026, doi:10.1016/j.cell.2026.08.025), plus README section 2.5.
+    *   Added README section 5.3 for single-gene PRC-AUC analysis.
     *   Updated general documentation and README structure.
 
 ## Version 1.1.9 (2026-08-14)

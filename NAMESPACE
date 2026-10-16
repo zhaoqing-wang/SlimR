@@ -16,6 +16,7 @@ export(Celltype_annotation_Excel)
 export(Celltype_annotation_PanglaoDB)
 export(Celltype_annotation_Seurat)
 export(Compute_Gene_AUC_ROC)
+export(Compute_Gene_PRC)
 export(Markers_filter_Cellmarker2)
 export(Markers_filter_PanglaoDB)
 export(Markers_filter_ScType)
@@ -69,6 +70,7 @@ importFrom(ggplot2,
   expansion,
   geom_abline,
   geom_boxplot,
+  geom_hline,
   geom_line,
   geom_point,
   geom_polygon,

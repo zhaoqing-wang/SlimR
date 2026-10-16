@@ -34,10 +34,11 @@ SlimR is an R package for cell-type annotation in single-cell and spatial transc
 5. [Other Functions Provided](#5-other-functions-provided)
     - [5.1 Cell type mapping](#51-cell-type-mapping)
     - [5.2 Single-Gene AUC and ROC Analysis](#52-single-gene-auc-and-roc-analysis)
-    - [5.3 Hierarchical Proportion Plot](#53-hierarchical-proportion-plot)
-    - [5.4 Weighted Voronoi Plot](#54-weighted-voronoi-plot)
-    - [5.5 Grouped Gene Z-Score Heatmap](#55-grouped-gene-z-score-heatmap)
-    - [5.6 Built‑in Colour Palettes](#56-builtin-colour-palettes)
+    - [5.3 Single-Gene PRC-AUC Analysis](#53-single-gene-prc-auc-analysis)
+    - [5.4 Hierarchical Proportion Plot](#54-hierarchical-proportion-plot)
+    - [5.5 Weighted Voronoi Plot](#55-weighted-voronoi-plot)
+    - [5.6 Grouped Gene Z-Score Heatmap](#56-grouped-gene-z-score-heatmap)
+    - [5.7 Built‑in Colour Palettes](#57-builtin-colour-palettes)
 6. [Citation](#6-citation)
 7. [License](#7-license)
 8. [Contact](#8-contact)
@@ -698,7 +699,43 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 </details>
 
-### 5.3 Hierarchical Proportion Plot
+### 5.3 Single-Gene PRC-AUC Analysis
+
+Assess how well a single gene identifies a user-defined cell group when the positive class is rare. PRC-AUC focuses on precision and recall, and is reported as Average Precision together with its no-skill baseline.
+
+```r
+result <- Compute_Gene_PRC(
+  seurat_obj  = sce,
+  gene        = "DCLK1",
+  group_col   = "Cell Types",
+  group_label = "Tuft cells",
+  assay       = "RNA",
+  method      = "rank",
+  plot        = TRUE,
+  line_color  = "darkmagenta",
+  line_size   = 1
+)
+
+# Access results
+result$PR_AUC           # numeric PR-AUC (average precision)
+result$Baseline         # no-skill baseline = positive class prevalence
+head(result$pr_data)    # data.frame with recall and precision
+result$pr_plot          # ggplot object (when plot = TRUE)
+```
+
+<details>
+<summary><b>Detailed parameter guide</b></summary>
+
+- `method`: `"raw"` (raw expression, optionally truncated by `min_expression`) or `"rank"` (dropout-robust rank-based scores).  
+- `min_expression`: when `method = "raw"`, values below this are set to zero.  
+- `keep_expression_above`: optional threshold – keep only cells with expression above it. **Warning:** this changes both the evaluation population and the baseline, and should be compared with the default all-cell result.  
+- `plot`, `plot_title`, `line_color`, `line_size`: control the PR plot appearance.
+
+</details>
+
+**Why PRC-AUC?** ROC-AUC is insensitive to class balance, but rare cell types are exactly where precision matters most. PRC-AUC answers “when I call a cell positive, how often am I right?”, making it more stringent under dropout and background contamination. Always interpret `PR_AUC` against its `Baseline`: the same value is strong at baseline 0.02 and weak at baseline 0.50.
+
+### 5.4 Hierarchical Proportion Plot
 
 Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
 The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent‑child links shown as three‑segment step lines). The **lower panel** (optional) displays per‑group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
@@ -763,7 +800,7 @@ The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion =
 
 </details>
 
-### 5.4 Weighted Voronoi Plot
+### 5.5 Weighted Voronoi Plot
 
 Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions, derived from ArchR but fully built into the package.
 
@@ -837,7 +874,7 @@ res$plot              # the ggplot object
 
 </details>
 
-### 5.5 Grouped Gene Z-Score Heatmap
+### 5.6 Grouped Gene Z-Score Heatmap
 
 Generate a mean Z-score expression heatmap across specified cell groups from a Seurat object using `pheatmap`. Optionally computes an integrated marker/pathway score per cell using `AUCell` and appends its group-level mean Z-score as a weighted top row. Colors are styled with a publication-ready blue-white-red gradient for heatmap values, while annotation bars seamlessly integrate with SlimR's internal discrete palettes (derived from ArchR).
 
@@ -884,7 +921,7 @@ Heatmap body values use a 11-color `RdBu` palette smoothly interpolated across c
 
 </details>
 
-### 5.6 Built‑in Colour Palettes
+### 5.7 Built‑in Colour Palettes
 
 Since *ArchR* is not available on CRAN, SlimR incorporates its colour palettes directly (via the internal function `paletteDiscrete()`) so that users can enjoy the same publication‑quality colours without any additional installation. The palettes, including the default stallion, are hard‑coded in the package and require no external dependencies.
 
