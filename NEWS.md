@@ -1,4 +1,4 @@
-## Version dev (2026-10-16)
+## Version 1.2.0 (2026-10-16)
 
 *   **New Features**
     *   Added the `scBaseCount` database, covering Human, Mouse, Drosophila, and Zebrafish, with four species-specific marker gene set lists: `human_gene_sets`, `mouse_gene_sets`, `fly_gene_sets`, and `zebrafish_gene_sets`.

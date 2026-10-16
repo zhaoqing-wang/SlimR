@@ -127,14 +127,14 @@ but nearly uninformative when the baseline is 0.50.
 \examples{
 \dontrun{
 # Default: raw expression, plot displayed automatically
-res <- Compute_Gene_PRC(sce, "BMX", "seurat_clusters", 12)
+res <- Compute_Gene_PRC(sce, "DCLK1", "seurat_clusters", 12)
 
 # Rank-based (robust to dropout)
-res_rank <- Compute_Gene_PRC(sce, "BMX", "seurat_clusters", 12,
+res_rank <- Compute_Gene_PRC(sce, "DCLK1", "seurat_clusters", 12,
                              method = "rank")
 
 # Keep only cells expressing above 0.5 (exploratory)
-res_sub <- Compute_Gene_PRC(sce, "BMX", "seurat_clusters", 12,
+res_sub <- Compute_Gene_PRC(sce, "DCLK1", "seurat_clusters", 12,
                             keep_expression_above = 0.5)
 }
 }
