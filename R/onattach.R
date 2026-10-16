@@ -12,7 +12,7 @@
     collapse = "\n"
   )
 
-  title <- "SlimR: Adaptive Machine Learning-Powered, Context-Matching Tool for Single-Cell and Spatial Transcriptomics Annotation."
+  title <- "SlimR: Adaptive Machine Learning Powered, Context Matching Tool for Single-Cell and Spatial Transcriptomics Annotation."
   url <- "https://github.com/zhaoqing-wang/SlimR"
   use_crayon <- requireNamespace("crayon", quietly = TRUE)
 

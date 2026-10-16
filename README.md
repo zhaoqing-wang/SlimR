@@ -6,7 +6,7 @@
 
 <img src="docs/Sticker.png" alt="Sticker" width="200"  align="right"/>
 
-SlimR is an R package for cell-type annotation in single-cell and spatial transcriptomics. Existing marker-based annotation methods typically rely on manually tuned thresholds and operate at a single analytical granularity, limiting their adaptability across diverse datasets. SlimR addresses these challenges through three methodological contributions: **(1)** a **context-matching** framework that standardizes heterogeneous marker sources via multi-level biological filtering; **(2)** a **dataset-adaptive parameterization** strategy that infers optimal annotation hyperparameters from intrinsic data characteristics, eliminating manual calibration; and **(3)** a **dual-granularity scoring** architecture that provides both cluster-level probabilistic assignment and per-cell resolution with manifold-aware spatial smoothing for continuous cell states. A unified Feature Significance Score ensures biologically interpretable marker ranking throughout the workflow.
+SlimR is an R package for cell-type annotation in single-cell and spatial transcriptomics. Existing marker based annotation methods typically rely on manually tuned thresholds and operate at a single analytical granularity, limiting their adaptability across diverse datasets. SlimR addresses these challenges through three methodological contributions: **(1)** a **context-matching** framework that standardizes heterogeneous marker sources via multi level biological filtering; **(2)** a **dataset adaptive parameterization** strategy that infers optimal annotation hyperparameters from intrinsic data characteristics, eliminating manual calibration; and **(3)** a **dual granularity scoring** architecture that provides both cluster level probabilistic assignment and per cell resolution with manifold aware spatial smoothing for continuous cell states. A unified Feature Significance Score ensures biologically interpretable marker ranking throughout the workflow.
 
 ## Table of Contents
 
@@ -214,7 +214,7 @@ Markers_list_CellTypist_top20 <- lapply(Markers_list_CellTypist, function(df) he
 
 **Reference:** *Youngblut et al. (2026) [doi:10.1016/j.cell.2026.08.025](https://doi.org/10.1016/j.cell.2026.08.025)*
 
-scBaseCount provides cross-species marker gene sets derived from over 500 million cells. SlimR includes four species-specific lists—human, mouse, zebrafish, and Drosophila—where each list contains cell type–marker gene sets ready for annotation.
+scBaseCount provides cross species marker gene sets derived from over 500 million cells. SlimR includes four species specific lists: human, mouse, zebrafish, and Drosophila—where each list contains cell type–marker gene sets ready for annotation.
 
 ``` r
 scBaseCount <- SlimR::scBaseCount
@@ -369,9 +369,9 @@ Markers_list_scIBD_top20 <- lapply(Markers_list_scIBD, function(df) head(df, 20)
 
 ## 3. Automated Annotation Workflow
 
-SlimR provides two automated approaches: **Cluster-Based** (one label per cluster, fast) and **Per-Cell** (individual cell labels, finer resolution). Both share the same parameter calculation step and `Markers_list` format.
+SlimR provides two automated approaches: **Cluster Based** (one label per cluster, fast) and **Per Cell** (individual cell labels, finer resolution). Both share the same parameter calculation step and `Markers_list` format.
 
-| Feature | Cluster-Based | Per-Cell |
+| Feature | Cluster Based | Per Cell |
 |---------|---------------|----------|
 | **Unit** | Cluster | Individual cell |
 | **Speed** | ~10–30s (50k cells) | ~2–3min (50k cells) |
@@ -508,7 +508,7 @@ Celltype_Verification(seurat_obj = sce,
 
 Three steps: **Calculate → Annotate → Verify**. Ideal for heterogeneous clusters, rare cell types, and continuous differentiation states.
 
-**Step 1: Calculate Per-Cell Types**
+**Step 1: Calculate Per Cell Types**
 
 ``` r
 SlimR_percell_result <- Celltype_Calculate_PerCell(
@@ -554,7 +554,7 @@ SlimR_percell_result <- Celltype_Calculate_PerCell(
 
 </details>
 
-**Step 2: Annotate Per-Cell Types**
+**Step 2: Annotate Per Cell Types**
 
 ``` r
 sce <- Celltype_Annotation_PerCell(
@@ -566,7 +566,7 @@ sce <- Celltype_Annotation_PerCell(
     )
 ```
 
-**Step 3: Verify Per-Cell Types**
+**Step 3: Verify Per Cell Types**
 
 ``` r
 Celltype_Verification_PerCell(
@@ -585,9 +585,9 @@ Celltype_Verification_PerCell(
 
 ---
 
-## 4. Semi-Automated Annotation Workflow
+## 4. Semi Automated Annotation Workflow
 
-For expert-guided manual annotation using visualizations:
+For expert guided manual annotation using visualizations:
 
 ### 4.1 Annotation Heat Map
 
@@ -608,7 +608,7 @@ Celltype_Annotation_Heatmap(
 
 ### 4.2 Annotation Feature Plots
 
-Generates per-cell-type expression dot plot with metric heat map:
+Generates per cell type expression dot plot with metric heat map:
 
 ``` r
 Celltype_Annotation_Features(
@@ -629,7 +629,7 @@ Celltype_Annotation_Features(
 
 ### 4.3 Annotation Combined Plots
 
-Generates per-cell-type box plots of marker expression levels:
+Generates per cell type box plots of marker expression levels:
 
 ``` r
 Celltype_Annotation_Combined(
@@ -650,7 +650,7 @@ Celltype_Annotation_Combined(
 
 ### 5.1 Cell type mapping
 
-Cross‑tabulate cell type labels from one Seurat object with a grouping column from another Seurat object. The function automatically aligns cell barcodes using multiple normalization strategies and returns count tables, column‑wise proportion tables, a dominant mapping, and a heatmap.
+Cross tabulate cell type labels from one Seurat object with a grouping column from another Seurat object. The function automatically aligns cell barcodes using multiple normalization strategies and returns count tables, column wise proportion tables, a dominant mapping, and a heatmap.
 
 ```r
 result <- Celltype_Compare(
@@ -668,7 +668,7 @@ result$main_to_sub         # dominant cell type per group
 
 ### 5.2 Single-Gene AUC and ROC Analysis
 
-Quickly assess the discriminative power of a single gene for a user‑defined cell group. The function returns the AUC, ROC data for custom plotting, and an optional ggplot2 curve.
+Quickly assess the discriminative power of a single gene for a user defined cell group. The function returns the AUC, ROC data for custom plotting, and an optional ggplot2 curve.
 
 ```r
 result <- Compute_Gene_AUC_ROC(
@@ -701,7 +701,7 @@ result$roc_plot         # ggplot object (when plot = TRUE)
 
 ### 5.3 Single-Gene PRC-AUC Analysis
 
-Assess how well a single gene identifies a user-defined cell group when the positive class is rare. PRC-AUC focuses on precision and recall, and is reported as Average Precision together with its no-skill baseline.
+Assess how well a single gene identifies a user defined cell group when the positive class is rare. PRC-AUC focuses on precision and recall, and is reported as Average Precision together with its no skill baseline.
 
 ```r
 result <- Compute_Gene_PRC(
@@ -728,7 +728,7 @@ result$pr_plot          # ggplot object (when plot = TRUE)
 
 - `method`: `"raw"` (raw expression, optionally truncated by `min_expression`) or `"rank"` (dropout-robust rank-based scores).  
 - `min_expression`: when `method = "raw"`, values below this are set to zero.  
-- `keep_expression_above`: optional threshold – keep only cells with expression above it. **Warning:** this changes both the evaluation population and the baseline, and should be compared with the default all-cell result.  
+- `keep_expression_above`: optional threshold – keep only cells with expression above it. **Warning:** this changes both the evaluation population and the baseline, and should be compared with the default all cell result.  
 - `plot`, `plot_title`, `line_color`, `line_size`: control the PR plot appearance.
 
 </details>
@@ -737,8 +737,8 @@ result$pr_plot          # ggplot object (when plot = TRUE)
 
 ### 5.4 Hierarchical Proportion Plot
 
-Create a publication‑ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub‑types.  
-The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent‑child links shown as three‑segment step lines). The **lower panel** (optional) displays per‑group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
+Create a publication ready composite figure that visualises the hierarchical classification of single‑cell data from broad cell types down to fine sub types.  
+The **upper panel** draws a layered tree diagram (bubble size ∝ cell count, parent child links shown as three segment step lines). The **lower panel** (optional) displays per group cell‑type proportions as a heatmap perfectly aligned with the terminal leaves.
 
 ```r
 # Full three-level hierarchy with proportion heatmap (default: row‑wise proportions)
@@ -779,7 +779,7 @@ res$combined_plot    # combined plot (requires patchwork)
 Use `NULL` to omit a level. If `Sub_cell_types` is given, `Cell_types` must also be provided.
 Category names (e.g. “T cell”) must be **unique within each level** (they can repeat across levels).
 * **Partial sub‑clustering**
-It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub‑label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
+It is common that only a subset of cells receives a finer annotation (e.g., only T cells are split into subtypes). The function automatically handles this: a cell without a valid sub label becomes a leaf at the deepest level where it has a label. The proportion heatmap is then built from the **union of all terminal leaf labels** – so no population is lost.
 * **Label placement & adaptive height**
 Leaf labels are drawn directly below the terminal nodes inside the tree panel, rotated 90°, with short black sticks connecting nodes to labels. The tree panel’s lower limit automatically expands to accommodate the longest cell‑type name – no label is ever clipped, and the heatmap sits immediately beneath the labels.
 * **Colour control**
@@ -793,8 +793,8 @@ Set `show_value_proportion = TRUE` to overlay formatted numeric proportion value
 When analysing sub‑types derived from a larger population (e.g., immune subsets) and group sizes differ, set `adjust_by_group = TRUE`. This scales proportions by group size relative to the mean group size, highlighting both within-group composition and overall abundance differences. When combined with `show_value_proportion = TRUE`, the displayed values and heatmap colors reflect these adjusted proportions.
 
 
-* **Non‑leaf annotations**
-`show_labels = TRUE` (default) places italic text next to non‑leaf Main and Cell level nodes, helping identify broad categories at a glance.
+* **Non leaf annotations**
+`show_labels = TRUE` (default) places italic text next to non leaf Main and Cell level nodes, helping identify broad categories at a glance.
 * **Output**
 The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion = FALSE`), and `combined_plot` (NULL unless **patchwork** is installed). All are **ggplot2** objects that can be further customised. The combined plot is automatically printed to the active graphics device.
 
@@ -802,7 +802,7 @@ The function returns a list with `tree_plot`, `prop_plot` (NULL if `proportion =
 
 ### 5.5 Weighted Voronoi Plot
 
-Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub‑type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions, derived from ArchR but fully built into the package.
+Generate a weighted Voronoi treemap that visualizes the hierarchical composition of single‑cell data. Polygons are grouped by the main cell type, and the area of each sub type polygon is proportional to its cell count. Colours follow the same palette logic as other SlimR functions, derived from ArchR but fully built into the package.
 
 The plot is drawn using a custom `ggplot2`‑based renderer to ensure exact colour matching with `Plot_Hierarchy_Proportion` and `DimPlot`, bypassing the limited colour handling of the upstream `WeightedTreemaps` package.
 
@@ -876,7 +876,7 @@ res$plot              # the ggplot object
 
 ### 5.6 Grouped Gene Z-Score Heatmap
 
-Generate a mean Z-score expression heatmap across specified cell groups from a Seurat object using `pheatmap`. Optionally computes an integrated marker/pathway score per cell using `AUCell` and appends its group-level mean Z-score as a weighted top row. Colors are styled with a publication-ready blue-white-red gradient for heatmap values, while annotation bars seamlessly integrate with SlimR's internal discrete palettes (derived from ArchR).
+Generate a mean Z-score expression heatmap across specified cell groups from a Seurat object using `pheatmap`. Optionally computes an integrated marker/pathway score per cell using `AUCell` and appends its group level mean Z-score as a weighted top row. Colors are styled with a publication ready blue-white-red gradient for heatmap values, while annotation bars seamlessly integrate with SlimR's internal discrete palettes (derived from ArchR).
 
 ```r
 # Basic group-level Z-score heatmap without AUCell integrated row
@@ -923,7 +923,7 @@ Heatmap body values use a 11-color `RdBu` palette smoothly interpolated across c
 
 ### 5.7 Built‑in Colour Palettes
 
-Since *ArchR* is not available on CRAN, SlimR incorporates its colour palettes directly (via the internal function `paletteDiscrete()`) so that users can enjoy the same publication‑quality colours without any additional installation. The palettes, including the default stallion, are hard‑coded in the package and require no external dependencies.
+Since *ArchR* is not available on CRAN, SlimR incorporates its colour palettes directly (via the internal function `paletteDiscrete()`) so that users can enjoy the same publication quality colours without any additional installation. The palettes, including the default stallion, are hard‑coded in the package and require no external dependencies.
 
 You can call the palette generator directly:
 ```r
@@ -963,7 +963,7 @@ ArchR is distributed under the **MIT License**. SlimR respects the original lice
 ## 6. Citation
 
 ```
-Wang Z (2026). SlimR: Adaptive Machine Learning-Powered, Context-Matching Tool for Single-Cell and Spatial Transcriptomics Annotation.
+Wang Z (2026). SlimR: Adaptive Machine Learning Powered, Context Matching Tool for Single-Cell and Spatial Transcriptomics Annotation.
 https://github.com/zhaoqing-wang/SlimR
 ```
 
